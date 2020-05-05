@@ -15,6 +15,7 @@ import logging
 import numpy
 import scipy
 import scipy.linalg as linalg
+from functools import reduce
 
 class Affine(object):
     """

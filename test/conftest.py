@@ -21,7 +21,7 @@
 """
 # ======================================================================================================================
 import pytest
-from PyQt4 import QtGui
+from PyQt5 import QtWidgets
 import sys
 import os
 import numpy as np
@@ -31,12 +31,12 @@ execdir = os.path.dirname(os.path.realpath(__file__))
 maindir_ = execdir[:-5]
 sys.path.append(maindir_)
 
-app = QtGui.QApplication(sys.argv)
+app = QtWidgets.QApplication(sys.argv)
 
 
 @pytest.fixture(scope='session')
 def maindir():
-	print maindir_
+	print(maindir_)
 	return maindir_
 
 

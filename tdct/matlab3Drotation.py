@@ -28,10 +28,10 @@ import sys
 import os
 
 try:
-	import matlab.engine
+    import matlab.engine
 except Exception as e:
-	print e
-	sys.exit()
+    print(e)
+    sys.exit()
 
 filein			= 'S1G2_40x_area1_1_resliced.raw'
 dtype			= 'uint16'
@@ -69,40 +69,40 @@ cutoutlamella	= 'true'
 
 
 def genMatlabScript():
-	## Generate Matlab script
-	format_args = [
-		filein,					# {0} = 'str'  file path to raw volume
-		dtype,					# {1} = 'str'  dtype, probably 'int16' or 'uint16'
-		endiantype,				# {2} = 'str'  endian type, probably le except when saving raw with FIJI (be by default)
-		dimensions_x,			# {3} = 'int'  vol in dimension x	e.g. 1344	[px]
-		dimensions_y,			# {4} = 'int'  vol in dimension y	e.g. 1024	[px]
-		dimensions_z,			# {5} = 'int'  vol in dimension z	e.g. 106	[px]
-		fileout,				# {6} = 'str'  fileout e.g. /path/to/dir/filename without extension
-		eul1_phi,				# {7} = 'int'  correlated rotation angle e.g. FIB: phi
-		eul1_psi,				# {8} = 'int'  correlated rotation angle e.g. FIB: psi
-		eul1_theta,				# {9} = 'int'  correlated rotation angle e.g. FIB: theta
-		scale1,					# {10} = 'int'  scaling factor e.g. FIB
-		shifty1,				# {11} = 'int'  shift in y e.g. FIB
-		shiftx1,				# {12} = 'int'  shift in x e.g. FIB
-		eul2_phi,				# {13} = 'int'  second correlated rotation angle e.g. SEM: phi
-		eul2_psi,				# {14} = 'int'  second correlated rotation angle e.g. SEM: psi
-		eul2_theta,				# {15} = 'int'  second correlated rotation angle e.g. SEM: theta
-		scale2,					# {16} = 'int'  second scaling factor e.g. SEM
-		shifty2,				# {17} = 'int'  second shift in y e.g. SEM
-		shiftx2,				# {18} = 'int'  second shift in x e.g. SEM
-		# +1 because matlab is not counting zero-based
-		lam_start_x + 1,		# {19} = 'int'  lamella start x coordinate	(1)		1/3----------------2/3
-		lam_end_x + 1,			# {20} = 'int'  lamella end x coordinate		(2)		 |					|
-		lam_start_y + 1,		# {21} = 'int'  lamella start y coordinate	(3)		 |					|
-		lam_end_y + 1,			# {22} = 'int'  lamella end y coordinate		(4)		1/4----------------2/4
-		binning,				# {23} = 'str'  binning true or false
-		binfactor,				# {24} = 'int'  binning factor, e.g. 1 for one time binning
-		showfig,				# {25} = 'str'  showfig true or false
-		savevolrot,				# {26} = 'str'  savevolrot true or false
-		cutoutlamella,			# {27} = 'str'  cut out lamella part from LM data true or false
-	]
+    ## Generate Matlab script
+    format_args = [
+        filein,					# {0} = 'str'  file path to raw volume
+        dtype,					# {1} = 'str'  dtype, probably 'int16' or 'uint16'
+        endiantype,				# {2} = 'str'  endian type, probably le except when saving raw with FIJI (be by default)
+        dimensions_x,			# {3} = 'int'  vol in dimension x	e.g. 1344	[px]
+        dimensions_y,			# {4} = 'int'  vol in dimension y	e.g. 1024	[px]
+        dimensions_z,			# {5} = 'int'  vol in dimension z	e.g. 106	[px]
+        fileout,				# {6} = 'str'  fileout e.g. /path/to/dir/filename without extension
+        eul1_phi,				# {7} = 'int'  correlated rotation angle e.g. FIB: phi
+        eul1_psi,				# {8} = 'int'  correlated rotation angle e.g. FIB: psi
+        eul1_theta,				# {9} = 'int'  correlated rotation angle e.g. FIB: theta
+        scale1,					# {10} = 'int'  scaling factor e.g. FIB
+        shifty1,				# {11} = 'int'  shift in y e.g. FIB
+        shiftx1,				# {12} = 'int'  shift in x e.g. FIB
+        eul2_phi,				# {13} = 'int'  second correlated rotation angle e.g. SEM: phi
+        eul2_psi,				# {14} = 'int'  second correlated rotation angle e.g. SEM: psi
+        eul2_theta,				# {15} = 'int'  second correlated rotation angle e.g. SEM: theta
+        scale2,					# {16} = 'int'  second scaling factor e.g. SEM
+        shifty2,				# {17} = 'int'  second shift in y e.g. SEM
+        shiftx2,				# {18} = 'int'  second shift in x e.g. SEM
+        # +1 because matlab is not counting zero-based
+        lam_start_x + 1,		# {19} = 'int'  lamella start x coordinate	(1)		1/3----------------2/3
+        lam_end_x + 1,			# {20} = 'int'  lamella end x coordinate		(2)		 |					|
+        lam_start_y + 1,		# {21} = 'int'  lamella start y coordinate	(3)		 |					|
+        lam_end_y + 1,			# {22} = 'int'  lamella end y coordinate		(4)		1/4----------------2/4
+        binning,				# {23} = 'str'  binning true or false
+        binfactor,				# {24} = 'int'  binning factor, e.g. 1 for one time binning
+        showfig,				# {25} = 'str'  showfig true or false
+        savevolrot,				# {26} = 'str'  savevolrot true or false
+        cutoutlamella,			# {27} = 'str'  cut out lamella part from LM data true or false
+    ]
 
-	script_template = '''
+    script_template = '''
 function exitcode = rotate_script()
 
 %% Variables
@@ -140,21 +140,21 @@ vol = tom_rawread(filein,dtype,endiantype,dimensions,0,0);			%% Dimensions x,y,z
 vol = single(vol);
 
 if binning == true
-	vol = csbin(vol,binfactor,3);
-	vol = single(vol);
+    vol = csbin(vol,binfactor,3);
+    vol = single(vol);
 else
-	binfactor = 0;
+    binfactor = 0;
 end
 
 vol = quadvol(vol,0);
 vol = tom_rotate(vol,eulerangle);									%% Phi Psi Theta
 
 if showfig == true
-	figure; imshow(tom_norm(max(vol,[],3),1)');
+    figure; imshow(tom_norm(max(vol,[],3),1)');
 end
 
 if savevolrot == true
-	tom_emwrite(strcat(fileout,'_rot.em'),vol);
+    tom_emwrite(strcat(fileout,'_rot.em'),vol);
 end
 
 im = tom_norm(max(vol,[],3),1)';
@@ -162,41 +162,41 @@ imwrite(im,strcat(fileout,'_max.tif'));
 im = imresize(im,scale);											%% scaling factor
 im_shift = tom_shift(im, shiftxy/(2^binfactor));					%% shift x y
 if showfig == true
-	figure; imshow(im_shift);
+    figure; imshow(im_shift);
 end
 imwrite(im_shift,strcat(fileout,'_max_scale_shift.tif'));
 
 %%%%%%%%%%%%%%%%%%%
 %% cut out lamella
 if cutoutlamella == true
-	[euler_out shift_out rott]=tom_sum_rotation([-eulerangle(2) -eulerangle(1) -eulerangle(3); ...
-												eulerangle_col(1) eulerangle_col(2) eulerangle_col(3)],[0 0 0; 0 0 0]);
+    [euler_out shift_out rott]=tom_sum_rotation([-eulerangle(2) -eulerangle(1) -eulerangle(3); ...
+                                                eulerangle_col(1) eulerangle_col(2) eulerangle_col(3)],[0 0 0; 0 0 0]);
 
-	vol(1:(1/scale * (lam_start_x + -shiftxy(2))/(2^binfactor)),:,:)=0;	%% x axes from 0 to beginning of lamella
-	vol((1/scale * (lam_end_x + -shiftxy(2))/(2^binfactor)):end,:,:)=0;	%% x axes from end of lamella to end of end of volume
-	vol(:,1:(1/scale * (lam_start_y + -shiftxy(1))/(2^binfactor)),:)=0;	%% y axes from 0 to beginning of lamella
-	vol(:,(1/scale * (lam_end_y + -shiftxy(1))/(2^binfactor)):end,:)=0;	%% y axes from end of lamella to end of end of volume
+    vol(1:(1/scale * (lam_start_x + -shiftxy(2))/(2^binfactor)),:,:)=0;	%% x axes from 0 to beginning of lamella
+    vol((1/scale * (lam_end_x + -shiftxy(2))/(2^binfactor)):end,:,:)=0;	%% x axes from end of lamella to end of end of volume
+    vol(:,1:(1/scale * (lam_start_y + -shiftxy(1))/(2^binfactor)),:)=0;	%% y axes from 0 to beginning of lamella
+    vol(:,(1/scale * (lam_end_y + -shiftxy(1))/(2^binfactor)):end,:)=0;	%% y axes from end of lamella to end of end of volume
 
 
-	im = tom_norm(max(vol,[],3),1)';
-	if showfig == true
-		figure; imshow(im);
-	end
-	imwrite(im,strcat(fileout,'_max_cut_FIB.tif'));
-	im = imresize(im,scale);											%% First scaling factor
-	im_shift = tom_shift(im, shiftxy/(2^binfactor));					%% First shift x y
-	imwrite(im_shift,strcat(fileout,'_max_cut_FIB_scale_shift.tif'));
+    im = tom_norm(max(vol,[],3),1)';
+    if showfig == true
+        figure; imshow(im);
+    end
+    imwrite(im,strcat(fileout,'_max_cut_FIB.tif'));
+    im = imresize(im,scale);											%% First scaling factor
+    im_shift = tom_shift(im, shiftxy/(2^binfactor));					%% First shift x y
+    imwrite(im_shift,strcat(fileout,'_max_cut_FIB_scale_shift.tif'));
 
-	vol = tom_rotate(vol,euler_out);
+    vol = tom_rotate(vol,euler_out);
 
-	im = tom_norm(max(vol,[],3),1)';
-	if showfig == true
-		figure; imshow(im);
-	end
-	imwrite(im,strcat(fileout,'_max_cut_SEM.tif'));
-	im = imresize(im,scale_col);										%% Second scaling factor
-	im_shift = tom_shift(im, shiftxy_col/(2^binfactor));				%% Second shift x y
-	imwrite(im_shift,strcat(fileout,'_max_cut_SEM_scale_shift.tif'));
+    im = tom_norm(max(vol,[],3),1)';
+    if showfig == true
+        figure; imshow(im);
+    end
+    imwrite(im,strcat(fileout,'_max_cut_SEM.tif'));
+    im = imresize(im,scale_col);										%% Second scaling factor
+    im_shift = tom_shift(im, shiftxy_col/(2^binfactor));				%% Second shift x y
+    imwrite(im_shift,strcat(fileout,'_max_cut_SEM_scale_shift.tif'));
 end
 
 exitcode = 0
@@ -209,30 +209,30 @@ function out = csbin(in,binfactor,dimension)
 % e.g. Image:   imgout = csbin(imgin,2,2);
 
 if dimension==2
-	bin = 2^binfactor;
-	imgsize = size(in);
-	out = tom_rescale(in,[imgsize(1)/bin imgsize(2)/bin]);
+    bin = 2^binfactor;
+    imgsize = size(in);
+    out = tom_rescale(in,[imgsize(1)/bin imgsize(2)/bin]);
 end
 
 if dimension==3
-	bin = 2^binfactor;
-	volsize = size(in);
-	volsize1 = volsize(1);
-	volsize2 = volsize(2);
-	volsize3 = volsize(3);
-	for i = 1:3
-	    if not(rem(volsize(i)/bin,1) == 0)
-		volsize(i) = volsize(i)*8;
-		newvol = single(zeros(volsize));
-		in = tom_paste(newvol,single(in),[(volsize(1) - volsize1)/2 ...
-		                          (volsize(2) - volsize2)/2 ...
-		                          (volsize(3) - 2*volsize3)/2]);
-	    end
-	end
+    bin = 2^binfactor;
+    volsize = size(in);
+    volsize1 = volsize(1);
+    volsize2 = volsize(2);
+    volsize3 = volsize(3);
+    for i = 1:3
+        if not(rem(volsize(i)/bin,1) == 0)
+        volsize(i) = volsize(i)*8;
+        newvol = single(zeros(volsize));
+        in = tom_paste(newvol,single(in),[(volsize(1) - volsize1)/2 ...
+                                  (volsize(2) - volsize2)/2 ...
+                                  (volsize(3) - 2*volsize3)/2]);
+        end
+    end
 
-	volsize = size(in);
+    volsize = size(in);
 
-	out = tom_rescale(in,[volsize(1)/bin volsize(2)/bin volsize(3)/bin]);
+    out = tom_rescale(in,[volsize(1)/bin volsize(2)/bin volsize(3)/bin]);
 end
 end
 
@@ -252,29 +252,29 @@ volout = tom_paste(single(qvol),volin,[round((max(size(qvol))-size(volin,1))/2) 
                                round((max(size(qvol))-size(volin,3))/2)]);
 end
 '''
-	return script_template.format(*format_args)
+    return script_template.format(*format_args)
 
 
 def writeScript():
-	file = open("rotate_script.m", "w")
-	file.write(genMatlabScript())
-	file.close()
+    file = open("rotate_script.m", "w")
+    file.write(genMatlabScript())
+    file.close()
 
 
 def runMatlab():
-	writeScript()
-	eng = matlab.engine.start_matlab()
-	exitcode = eng.rotate_script()
-	if exitcode == 0:
-		print "Script successfully executed"
-	else:
-		print "Something went horribly wrong!!!11 AAAAAHHHHHHHHH"
-	cleanUp()
+    writeScript()
+    eng = matlab.engine.start_matlab()
+    exitcode = eng.rotate_script()
+    if exitcode == 0:
+        print("Script successfully executed")
+    else:
+        print("Something went horribly wrong!!!11 AAAAAHHHHHHHHH")
+    cleanUp()
 
 
 def cleanUp():
-	os.remove("rotate_script.m")
+    os.remove("rotate_script.m")
 
 if __name__ == "__main__":
-	writeScript()
-	cleanUp()
+    writeScript()
+    cleanUp()

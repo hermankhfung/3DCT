@@ -1,5 +1,22 @@
 # Changelog #
 
+## 3.0.0 ##
+
+##### Major Changes: #####
+- ported to Python 3 with 2to3
+    - replaced multiplication assignments (*=) with calls to numpy.multiply(..., casting='unsafe') to avoid broadcasting errors with numpy.ndarray
+- updated code to use PyQt5
+    - try-catch blocks to handle QFileDialog results
+- checkbox for flipping image stacks and sequences, corresponding changes in
+    - tdct.stackProcessing.main()
+    - tdct.stackProcessing.normalize()
+    - tdct.stackProcessing.mip()
+- additional buttons on main and correlation windows for tools3dct module
+    - Create MIP and Create Mask in new Correlated Projection tab
+    - Detect beads and SEM -> FIB in Control tab
+- modified image checks to allow combination of 2D grayscale and RGB images in both left and right scenes, blending behaviour altered: RGB images in layer 1 will be converted to grayscale if any other layers are switched on
+
+
 ## 2.4.0 ##
 2020-04-24[^2]
 

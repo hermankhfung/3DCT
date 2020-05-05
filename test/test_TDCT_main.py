@@ -44,7 +44,7 @@ def test_TDCT_mainInit():
 
 @pytest.mark.skipif(TDCT_error != "", reason="TDCT_main import failed: {0}".format(TDCT_error))
 def test_splashScreen(maindir):
-	print maindir
+	print(maindir)
 	gif = os.path.join(maindir,'icons','SplashScreen.gif')
 	assert os.path.isfile(gif) is True
 	movie = TDCT_main.QtGui.QMovie(gif)
@@ -54,7 +54,7 @@ def test_splashScreen(maindir):
 
 @pytest.mark.skipif(TDCT_error != "", reason="TDCT_main import failed: {0}".format(TDCT_error))
 def test_guiFile(maindir):
-	print maindir
+	print(maindir)
 	qtCreatorFile_main = os.path.join(maindir, "TDCT_main.ui")
 	assert os.path.isfile(qtCreatorFile_main) is True
 	Ui_MainWindow, QtBaseClass = TDCT_main.uic.loadUiType(qtCreatorFile_main)

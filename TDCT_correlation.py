@@ -30,7 +30,7 @@ import os
 import time
 import re
 import tempfile
-from PyQt4 import QtCore, QtGui, uic
+from PyQt5 import QtCore, QtGui, QtWidgets, uic
 import numpy as np
 import cv2
 import tifffile as tf
@@ -38,6 +38,8 @@ import qimage2ndarray
 ## Colored stdout, custom Qt functions (mostly to handle events), CSV handler
 ## and correlation algorithm
 from tdct import clrmsg, TDCT_debug, QtCustom, csvHandler, correlation
+from tools3dct.find_beads import find_beads_GUI
+from tools3dct.predict_FIB import predict_FIB_GUI
 
 __version__ = 'v2.3.0'
 
@@ -54,19 +56,20 @@ Ui_WidgetWindow, QtBaseClass = uic.loadUiType(qtCreatorFile_main)
 
 debug = TDCT_debug.debug
 # debug = True
-if debug is True: print clrmsg.DEBUG + "Execdir =", execdir
+if debug is True: print(clrmsg.DEBUG + "Execdir =", execdir)
 
 
-class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
+class MainWidget(QtWidgets.QMainWindow, Ui_WidgetWindow):
     def __init__(self, parent=None, leftImage=None, rightImage=None, workingdir=None):
-        if debug is True: print clrmsg.DEBUG + 'Debug messages enabled'
-        QtGui.QWidget.__init__(self)
+        if debug is True: print(clrmsg.DEBUG + 'Debug messages enabled')
+        QtWidgets.QMainWindow.__init__(self)
         Ui_WidgetWindow.__init__(self)
+        # super(MainWidget, self).__init__()
         self.setupUi(self)
         self.parent = parent
         self.counter = 0		# Just for testing (loop counter for test button)
-        self.refreshUI = QtGui.QApplication.processEvents
-        self.currentFocusedWidgetName = QtGui.QApplication.focusWidget()
+        self.refreshUI = QtWidgets.QApplication.processEvents
+        self.currentFocusedWidgetName = QtWidgets.QApplication.focusWidget()
         if workingdir is None:
             self.workingdir = execdir
         else:
@@ -202,6 +205,8 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
         self.radioButton_layer3.clicked.connect(self.setSliders)
 
         ## Buttons
+        self.toolButton_detectBeads.clicked.connect(self.detectBeads)
+        self.toolButton_sem2fib.clicked.connect(self.sem2fib)
         self.toolButton_rotcw.clicked.connect(lambda: self.rotateImage45(direction='cw'))
         self.toolButton_rotccw.clicked.connect(lambda: self.rotateImage45(direction='ccw'))
         self.toolButton_brightness_reset.clicked.connect(lambda: self.horizontalSlider_brightness.setValue(0))
@@ -221,7 +226,7 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
         self.horizontalSlider_brightness.valueChanged.connect(self.setBrightCont)
         self.horizontalSlider_contrast.valueChanged.connect(self.setBrightCont)
         ## Capture focus change events
-        QtCore.QObject.connect(QtGui.QApplication.instance(), QtCore.SIGNAL("focusChanged(QWidget *, QWidget *)"), self.changedFocusSlot)
+        QtWidgets.QApplication.instance().focusChanged.connect(self.changedFocusSlot)
 
         ## Pass models and scenes to tableview for easy access
         self.tableView_left._model = self.modelLleft
@@ -242,13 +247,13 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
         """
         if event.key() == QtCore.Qt.Key_Delete:
             if self.currentFocusedWidgetName == 'tableView_left':
-                if debug is True: print clrmsg.DEBUG + "Deleting item(s) on the left side"
+                if debug is True: print(clrmsg.DEBUG + "Deleting item(s) on the left side")
                 # self.deleteItem(self.tableView_left,self.modelLleft,self.sceneLeft)
                 self.tableView_left.deleteItem()
                 # self.updateItems(self.modelLleft,self.sceneLeft)
                 self.tableView_left.updateItems()
             elif self.currentFocusedWidgetName == 'tableView_right':
-                if debug is True: print clrmsg.DEBUG + "Deleting item(s) on the right side"
+                if debug is True: print(clrmsg.DEBUG + "Deleting item(s) on the right side")
                 # self.deleteItem(self.tableView_right,self.modelRight,self.sceneRight)
                 self.tableView_right.deleteItem()
                 # self.updateItems(self.modelRight,self.sceneRight)
@@ -257,8 +262,8 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
     def closeEvent(self, event):
         """Warning when closing application to prevent unintentional quitting with reminder to save data"""
         quit_msg = "Are you sure you want to exit the\n3DCT Correlation?\n\nUnsaved data will be lost!"
-        reply = QtGui.QMessageBox.question(self, 'Message', quit_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-        if reply == QtGui.QMessageBox.Yes:
+        reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg, QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+        if reply == QtWidgets.QMessageBox.Yes:
             event.accept()
             if self.parent:
                 self.parent.cleanUp()
@@ -269,7 +274,7 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
                 self.parent.exitstatus = 1
 
     def selectWorkingDir(self):
-        path = str(QtGui.QFileDialog.getExistingDirectory(self, "Select working directory", self.workingdir))
+        path = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select working directory", self.workingdir))
         self.activateWindow()
         if path:
             workingdir = self.checkWorkingDirPrivileges(path)
@@ -283,10 +288,10 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
             if workingdir:
                 self.workingdir = workingdir
             self.lineEdit_workingDir.setText(self.workingdir)
-            print 'updated working dir to:', self.workingdir
+            print('updated working dir to:', self.workingdir)
         else:
             self.lineEdit_workingDir.setText(self.workingdir)
-            print clrmsg.ERROR + "Dropped object is not a valid path. Returning to {0} as working directory.".format(self.workingdir)
+            print(clrmsg.ERROR + "Dropped object is not a valid path. Returning to {0} as working directory.".format(self.workingdir))
 
     def checkWorkingDirPrivileges(self,path):
         try:
@@ -294,14 +299,14 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
             testfile.close()
             return path
         except Exception:
-            QtGui.QMessageBox.critical(
+            QtWidgets.QMessageBox.critical(
                 self,"Warning",
                 "I cannot write to this folder: {0}\nFalling back to {1} as the working directory".format(path, self.workingdir))
             return None
 
     def changedFocusSlot(self, former, current):
-        if debug is True: print clrmsg.DEBUG + "focus changed from/to:", former.objectName() if former else former, \
-                current.objectName() if current else current
+        if debug is True: print(clrmsg.DEBUG + "focus changed from/to:", former.objectName() if former else former, \
+                current.objectName() if current else current)
         if current:
             self.currentFocusedWidgetName = current.objectName()
             self.currentFocusedWidget = current
@@ -557,14 +562,14 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
                     self.modelLleft.item(row, 1).setBackground(QtGui.QColor(*color_correlate))
                     self.modelLleft.item(row, 2).setBackground(QtGui.QColor(*color_correlate))
                 except:
-                    if debug is True: print clrmsg.DEBUG + "Model item is None"
+                    if debug is True: print(clrmsg.DEBUG + "Model item is None")
             if rowsRight != 0:
                 try:
                     self.modelRight.item(row, 0).setBackground(QtGui.QColor(*color_correlate))
                     self.modelRight.item(row, 1).setBackground(QtGui.QColor(*color_correlate))
                     self.modelRight.item(row, 2).setBackground(QtGui.QColor(*color_correlate))
                 except:
-                    if debug is True: print clrmsg.DEBUG + "Model item is None"
+                    if debug is True: print(clrmsg.DEBUG + "Model item is None")
         if rowsLeft > rowsRight:
             if '{0:b}'.format(self.sceneLeft.imagetype)[-1] == '0' or '{0:b}'.format(
                                                 self.sceneLeft.imagetype)[-1] == '{0:b}'.format(self.sceneRight.imagetype)[-1]:
@@ -577,7 +582,7 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
                     self.modelLleft.item(row, 1).setBackground(QtGui.QColor(*color_overflow))
                     self.modelLleft.item(row, 2).setBackground(QtGui.QColor(*color_overflow))
                 except:
-                    if debug is True: print clrmsg.DEBUG + "Model item is None"
+                    if debug is True: print(clrmsg.DEBUG + "Model item is None")
         elif rowsLeft < rowsRight:
             if '{0:b}'.format(self.sceneRight.imagetype)[-1] == '0' or '{0:b}'.format(
                                                 self.sceneLeft.imagetype)[-1] == '{0:b}'.format(self.sceneRight.imagetype)[-1]:
@@ -590,24 +595,24 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
                     self.modelRight.item(row, 1).setBackground(QtGui.QColor(*color_overflow))
                     self.modelRight.item(row, 2).setBackground(QtGui.QColor(*color_overflow))
                 except:
-                    if debug is True: print clrmsg.DEBUG + "Model item is None"
+                    if debug is True: print(clrmsg.DEBUG + "Model item is None")
 
     def getMarkerColor(self):
-        color = QtGui.QColorDialog.getColor()
+        color = QtWidgets.QColorDialog.getColor()
         self.activateWindow()
         if color.isValid():
             self.markerColor = (color.blue(), color.green(), color.red())
             self.label_markerColor.setStyleSheet("background-color: rgb{0};".format((color.red(), color.green(), color.blue())))
 
     def getPoiColor(self):
-        color = QtGui.QColorDialog.getColor()
+        color = QtWidgets.QColorDialog.getColor()
         self.activateWindow()
         if color.isValid():
             self.poiColor = (color.blue(), color.green(), color.red())
             self.label_poiColor.setStyleSheet("background-color: rgb{0};".format((color.red(), color.green(), color.blue())))
 
     def getCustomChannelColor(self):
-        color = QtGui.QColorDialog.getColor()
+        color = QtWidgets.QColorDialog.getColor()
         self.activateWindow()
         if color.isValid():
             return [color.red(), color.green(), color.blue()]
@@ -625,9 +630,9 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
             try:
                 splashscreen.splash.showMessage("Loading images... "+self.leftImage,color=QtCore.Qt.white)
             except Exception as e:
-                print clrmsg.WARNING, e
+                print(clrmsg.WARNING, e)
                 pass
-            QtGui.QApplication.processEvents()
+            QtWidgets.QApplication.processEvents()
             ## Get pixel size
             self.sceneLeft.pixelSize = self.pxSize(self.leftImage)
             self.sceneLeft.pixelSizeUnit = 'um'
@@ -653,11 +658,11 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
                 self.setCustomRotCenter(max(self.imgstack_left_layer1.shape))
             # self.pixmap_left = QtGui.QPixmap(self.leftImage)
             self.pixmap_left = self.cv2Qimage(self.img_left_displayed_layer1)
-            self.pixmap_item_left = QtGui.QGraphicsPixmapItem(self.pixmap_left, None, self.sceneLeft)
+            self.pixmap_item_left = self.sceneLeft.addPixmap(self.pixmap_left)
             ## connect scenes to GUI elements
             self.graphicsView_left.setScene(self.sceneLeft)
             ## reset scaling (needed for reinitialization)
-            self.graphicsView_left.resetMatrix()
+            self.graphicsView_left.resetTransform()
             ## scaling scene, not image
             scaling_factor = float(self.size)/max(self.pixmap_left.width(), self.pixmap_left.height())
             self.graphicsView_left.scale(scaling_factor,scaling_factor)
@@ -671,9 +676,9 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
             try:
                 splashscreen.splash.showMessage("Loading images... "+self.rightImage,color=QtCore.Qt.white)
             except Exception as e:
-                print clrmsg.WARNING, e
+                print(clrmsg.WARNING, e)
                 pass
-            QtGui.QApplication.processEvents()
+            QtWidgets.QApplication.processEvents()
             ## Get pixel size
             self.sceneRight.pixelSize = self.pxSize(self.rightImage)
             self.sceneRight.pixelSizeUnit = 'um'
@@ -699,19 +704,19 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
                 self.setCustomRotCenter(max(self.imgstack_right_layer1.shape))
             # self.pixmap_right = QtGui.QPixmap(self.rightImage)
             self.pixmap_right = self.cv2Qimage(self.img_right_displayed_layer1)
-            self.pixmap_item_right = QtGui.QGraphicsPixmapItem(self.pixmap_right, None, self.sceneRight)
+            self.pixmap_item_right = self.sceneRight.addPixmap(self.pixmap_right)
             ## connect scenes to GUI elements
             self.graphicsView_right.setScene(self.sceneRight)
             ## reset scaling (needed for reinitialization)
-            self.graphicsView_right.resetMatrix()
+            self.graphicsView_right.resetTransform()
             ## scaling scene, not image
             scaling_factor = float(self.size)/max(self.pixmap_right.width(), self.pixmap_right.height())
             self.graphicsView_right.scale(scaling_factor,scaling_factor)
 
     def openImageLeft(self):
         ## *.png *.jpg *.bmp not yet supported
-        path = str(QtGui.QFileDialog.getOpenFileName(
-            None,"Select image file for correlation", self.workingdir,"Image Files (*.tif *.tiff);; All (*.*)"))
+        path = str(QtWidgets.QFileDialog.getOpenFileName(
+            None,"Select image file for correlation", self.workingdir,"Image Files (*.tif *.tiff);; All (*.*)")[0])
         self.activateWindow()
         if path != '':
             ## Set focus to corresponding side to properly reset layer checkboxes
@@ -754,8 +759,8 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
 
     def openImageRight(self):
         ## *.png *.jpg *.bmp not yet supported
-        path = str(QtGui.QFileDialog.getOpenFileName(
-            None,"Select image file for correlation", self.workingdir,"Image Files (*.tif *.tiff);; All (*.*)"))
+        path = str(QtWidgets.QFileDialog.getOpenFileName(
+            None,"Select image file for correlation", self.workingdir,"Image Files (*.tif *.tiff);; All (*.*)")[0])
         self.activateWindow()
         if path != '':
             ## Set focus to corresponding side to properly reset layer checkboxes
@@ -870,7 +875,7 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
 
     def rotateImage45(self,direction=None):
         if direction is None:
-            print clrmsg.ERROR + "Please specify direction ('cw' or 'ccw')."
+            print(clrmsg.ERROR + "Please specify direction ('cw' or 'ccw').")
         # rotate 45 degree clockwise
         elif direction == 'cw':
             if self.label_selimg.text() == 'left':
@@ -902,7 +907,7 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
 
     def anglectrl(self,angle=None):
         if angle is None:
-            print clrmsg.ERROR + "Please specify side, e.g. anglectrl(angle=self.sceneLeft.rotangle)"
+            print(clrmsg.ERROR + "Please specify side, e.g. anglectrl(angle=self.sceneLeft.rotangle)")
         elif angle >= 360:
             angle -= 360
         elif angle < 0:
@@ -915,12 +920,12 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
             ## Update graphics
             self.sceneLeft.enumeratePoints()
             if self.sceneLeft.pixelSize:
-                if debug is True: print clrmsg.DEBUG + "Doing stuff with image pixelSize (left image).", self.label_imgpxsize.text()
+                if debug is True: print(clrmsg.DEBUG + "Doing stuff with image pixelSize (left image).", self.label_imgpxsize.text())
                 try:
                     self.label_markerSizeNano.setText(str(self.sceneLeft.markerSize*2*self.sceneLeft.pixelSize))
                     self.label_markerSizeNanoUnit.setText(self.sceneLeft.pixelSizeUnit)
                 except:
-                    if debug is True: print clrmsg.DEBUG + "Image pixel size is not a number:", self.label_imgpxsize.text()
+                    if debug is True: print(clrmsg.DEBUG + "Image pixel size is not a number:", self.label_imgpxsize.text())
                     self.label_markerSizeNano.setText("NaN")
                     self.label_markerSizeNanoUnit.setText('')
             else:
@@ -931,12 +936,12 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
             ## Update graphics
             self.sceneRight.enumeratePoints()
             if self.sceneRight.pixelSize:
-                if debug is True: print clrmsg.DEBUG + "Doing stuff with image pixelSize (right image).", self.label_imgpxsize.text()
+                if debug is True: print(clrmsg.DEBUG + "Doing stuff with image pixelSize (right image).", self.label_imgpxsize.text())
                 try:
                     self.label_markerSizeNano.setText(str(self.sceneRight.markerSize*2*self.sceneRight.pixelSize))
                     self.label_markerSizeNanoUnit.setText(self.sceneRight.pixelSizeUnit)
                 except:
-                    if debug is True: print clrmsg.DEBUG + "Image pixel size is not a number:", self.label_imgpxsize.text()
+                    if debug is True: print(clrmsg.DEBUG + "Image pixel size is not a number:", self.label_imgpxsize.text())
                     self.label_markerSizeNano.setText("NaN")
                     self.label_markerSizeNanoUnit.setText('')
             else:
@@ -955,6 +960,20 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
                                                 ###############################################
 
                                                 ###############################################
+                                                ######            Bead search            ######
+                                                #################### START ####################
+
+    def detectBeads(self):
+        self.window_detect = find_beads_GUI(parentWidget=self)
+
+    def sem2fib(self):
+        self.window_fluo = predict_FIB_GUI(parentWidget=self)
+
+                                                ##################### END #####################
+                                                ######            Bead search            ######
+                                                ###############################################
+
+                                                ###############################################
                                                 ######    Image processing functions     ######
                                                 #################### START ####################
     ## Read image
@@ -970,38 +989,41 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
             8 = multicolor/multichannel
             16= normalized
         """
-        if debug is True: print clrmsg.DEBUG + "===== imread"
-        img = tf.imread(path)
-        if debug is True: print clrmsg.DEBUG + "Image shape/dtype:", img.shape, img.dtype
-        ## Displaying issues with uint16 images -> convert to uint8
-        if img.dtype == 'uint16':
-            img = img*(255.0/img.max())
-            img = img.astype(dtype=np.uint8)
-            if debug is True: print clrmsg.DEBUG + "Image dtype converted to:", img.shape, img.dtype
-        if img.ndim == 4:
-            if debug is True: print clrmsg.DEBUG + "Calculating multichannel MIP"
-            ## return MIP, code 2+8+16 and image stack
-            return np.amax(img, axis=1), 26, img
-        ## this can only handle rgb. For more channels set "3" to whatever max number of channels should be handled
-        elif img.ndim == 3 and any([True for dim in img.shape if dim <= 4]) or img.ndim == 2:
-            if debug is True: print clrmsg.DEBUG + "Loading regular 2D image... multicolor/normalize:", \
-                [True for x in [img.ndim] if img.ndim == 3],'/',[normalize]
-            if normalize is True:
-                ## return normalized 2D image with code 1+4+16 for gray scale normalized 2D image and 1+8+16 for
-                ## multicolor normalized 2D image
-                return self.norm_img(img), 25 if img.ndim == 3 else 21, None
-            else:
-                ## return 2D image with code 1+4 for gray scale 2D image and 1+8 for multicolor 2D image
-                return img, 9 if img.ndim == 3 else 5, None
-        elif img.ndim == 3:
-            if debug is True: print clrmsg.DEBUG + "Calculating MIP"
-            ## return MIP and code 2+4+1E6
-            return np.amax(img, axis=0), 22, img
+        if debug is True: print(clrmsg.DEBUG + "===== imread")
+        try:
+            img = tf.imread(path)
+            if debug is True: print(clrmsg.DEBUG + "Image shape/dtype:", img.shape, img.dtype)
+            ## Displaying issues with uint16 images -> convert to uint8
+            if img.dtype == 'uint16':
+                img = img*(255.0/img.max())
+                img = img.astype(dtype=np.uint8)
+                if debug is True: print(clrmsg.DEBUG + "Image dtype converted to:", img.shape, img.dtype)
+            if img.ndim == 4:
+                if debug is True: print(clrmsg.DEBUG + "Calculating multichannel MIP")
+                ## return MIP, code 2+8+16 and image stack
+                return np.amax(img, axis=1), 26, img
+            ## this can only handle rgb. For more channels set "3" to whatever max number of channels should be handled
+            elif img.ndim == 3 and any([True for dim in img.shape if dim <= 4]) or img.ndim == 2:
+                if debug is True: print(clrmsg.DEBUG + "Loading regular 2D image... multicolor/normalize:", \
+                    [True for x in [img.ndim] if img.ndim == 3],'/',[normalize])
+                if normalize is True:
+                    ## return normalized 2D image with code 1+4+16 for gray scale normalized 2D image and 1+8+16 for
+                    ## multicolor normalized 2D image
+                    return self.norm_img(img), 25 if img.ndim == 3 else 21, None
+                else:
+                    ## return 2D image with code 1+4 for gray scale 2D image and 1+8 for multicolor 2D image
+                    return img, 9 if img.ndim == 3 else 5, None
+            elif img.ndim == 3:
+                if debug is True: print(clrmsg.DEBUG + "Calculating MIP")
+                ## return MIP and code 2+4+1E6
+                return np.amax(img, axis=0), 22, img
+        except (FileNotFoundError, ValueError):
+            return None, None, None
 
     def pxSize(self,img_path,z=False):
         with tf.TiffFile(img_path) as tif:
-            for page in tif:
-                for tag in page.tags.values():
+            for page in tif.pages:
+                for tag in list(page.tags.values()):
                     if isinstance(tag.value, str):
                         for keyword in ['PhysicalSizeX','PixelWidth','PixelSize'] if not z else ['PhysicalSizeZ','FocusStepSize']:
                             tagposs = [m.start() for m in re.finditer(keyword, tag.value)]
@@ -1010,13 +1032,13 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
                                     for piece in tag.value[tagpos:tagpos+30].split('"'):
                                         try:
                                             pixelSize = float(piece)
-                                            if debug is True: print clrmsg.DEBUG + "Pixel size from exif metakey:", keyword
+                                            if debug is True: print(clrmsg.DEBUG + "Pixel size from exif metakey:", keyword)
                                             ## Value is in um from CorrSight/LA tiff files
                                             if z:
                                                 pixelSize = pixelSize*1000
                                             return pixelSize
                                         except Exception as e:
-                                            if debug is True: print clrmsg.DEBUG + "Pixel size parser:", e
+                                            if debug is True: print(clrmsg.DEBUG + "Pixel size parser:", e)
                                             pass
                                 elif keyword == 'PixelWidth':
                                     for piece in tag.value[tagpos:tagpos+30].split('='):
@@ -1025,30 +1047,30 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
                                                 pixelSize = float(piece.strip().split('\r\n')[0])
                                             except:
                                                 pixelSize = float(piece.strip().split(r'\r\n')[0])
-                                            if debug is True: print clrmsg.DEBUG + "Pixel size from exif metakey:", keyword
+                                            if debug is True: print(clrmsg.DEBUG + "Pixel size from exif metakey:", keyword)
                                             ## *1E6 because these values from SEM/FIB image is in m
                                             return pixelSize*1E6
                                         except Exception as e:
-                                            if debug is True: print clrmsg.DEBUG + "Pixel size parser:", e
+                                            if debug is True: print(clrmsg.DEBUG + "Pixel size parser:", e)
                                             pass
                                 elif keyword == 'PixelSize' or 'FocusStepSize':
                                     for piece in tag.value[tagpos:tagpos+30].split('"'):
                                         try:
                                             pixelSize = float(piece)
-                                            if debug is True: print clrmsg.DEBUG + "Pixel size from exif metakey:", keyword
+                                            if debug is True: print(clrmsg.DEBUG + "Pixel size from exif metakey:", keyword)
                                             ## Value is in um from CorrSight/LA tiff files
                                             return pixelSize
                                         except Exception as e:
-                                            if debug is True: print clrmsg.DEBUG + "Pixel size parser:", e
+                                            if debug is True: print(clrmsg.DEBUG + "Pixel size parser:", e)
                                             pass
 
     ## Convert opencv image (numpy array in BGR) to RGB QImage and return pixmap. Only takes 2D images
     def cv2Qimage(self,img,combobox=None):
-        if debug is True: print clrmsg.DEBUG + "===== cv2Qimage"
+        if debug is True: print(clrmsg.DEBUG + "===== cv2Qimage")
         if img.shape[0] <= 4:
-            if debug is True: print clrmsg.DEBUG + "Swapping image axes from c,y,x to y,x,c."
+            if debug is True: print(clrmsg.DEBUG + "Swapping image axes from c,y,x to y,x,c.")
             img = img.swapaxes(0,2).swapaxes(0,1)
-        if debug is True: print clrmsg.DEBUG + "Image shape:", img.shape
+        if debug is True: print(clrmsg.DEBUG + "Image shape:", img.shape)
 
         return QtGui.QPixmap.fromImage(qimage2ndarray.array2qimage(img))
 
@@ -1091,7 +1113,7 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
     ## Adjust Brightness and Contrast by sliders
     def adjustBrightCont(self,img_displayed,img_adjusted,brightness,contrast):
         if debug is True: ping = time.time()
-        if debug is True: print clrmsg.DEBUG + "===== adjustBrightCont"
+        if debug is True: print(clrmsg.DEBUG + "===== adjustBrightCont")
         ## Load replacement
         img_adjusted = np.copy(img_displayed)
         ## Load contrast value (Slider value between 0 and 100)
@@ -1108,12 +1130,12 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
             ## Convert from int16 back to uint8
             img_adjusted = img_adjusted.astype(dtype=np.uint8)
         if debug is True: pong = time.time()
-        if debug is True: print clrmsg.DEBUG + 'adjusting brightness/contrast in s:', pong-ping
+        if debug is True: print(clrmsg.DEBUG + 'adjusting brightness/contrast in s:', pong-ping)
         return img_adjusted
 
     ## Normalize Image
     def norm_img(self,img,copy=False):
-        if debug is True: print clrmsg.DEBUG + "===== norm_img"
+        if debug is True: print(clrmsg.DEBUG + "===== norm_img")
         if copy is True:
             img = np.copy(img)
         dtype = str(img.dtype)
@@ -1125,20 +1147,21 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
         elif dtype == "float32" or dtype == "float64":
             typesize = 1
         else:
-            print clrmsg.ERROR + "Sorry, I don't know this file type yet: ", dtype
+            print(clrmsg.ERROR + "Sorry, I don't know this file type yet: ", dtype)
         ## 2D image
-        if img.ndim == 2: img *= typesize/img.max()
+        if img.ndim == 2:
+            img = np.multiply(img, typesize/img.max(), out=img, casting="unsafe")
         ## 3D or multichannel image
         elif img.ndim == 3:
             ## tifffile reads z,y,x for stacks but y,x,c if it is multichannel image (or z,c,y,x if it is a multicolor image stack)
             if img.shape[-1] > 4:
-                if debug is True: print clrmsg.DEBUG + "image stack"
+                if debug is True: print(clrmsg.DEBUG + "image stack")
                 for i in range(int(img.shape[0])):
-                    img[i,:,:] *= typesize/img[i,:,:].max()
+                    img[i,:,:] = np.multiply(img[i,:,:], typesize/img[i,:,:].max(), out=img[i,:,:], casting="unsafe")
             else:
-                if debug is True: print clrmsg.DEBUG + "multichannel image"
+                if debug is True: print(clrmsg.DEBUG + "multichannel image")
                 for i in range(int(img.shape[2])):
-                    img[:,:,i] *= typesize/img[:,:,i].max()
+                    img[:,:,i] = np.multiply(img[:,:,i], typesize/img[:,:,i].max(), out=img[:,:,i], casting="unsafe")
         return img
 
     def selectSlice(self):
@@ -1239,14 +1262,16 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
 
     def colorizeImage(self,img,color=None):
         if debug is True: ping = time.time()
-        if color is None and all(comboboxColor == 'none' for comboboxColor in [
-                                                                self.comboBox_channelColorLayer1.currentText(),
-                                                                self.comboBox_channelColorLayer2.currentText(),
-                                                                self.comboBox_channelColorLayer3.currentText()]):
-            if debug is True: pong = time.time()
-            if debug is True: print clrmsg.DEBUG + 'colorize image in s:', pong-ping
-            return img
-        elif color is None:
+        # if color is None and all(comboboxColor == 'none' for comboboxColor in [
+        #                                                         self.comboBox_channelColorLayer1.currentText(),
+        #                                                         self.comboBox_channelColorLayer2.currentText(),
+        #                                                         self.comboBox_channelColorLayer3.currentText()]):
+        #     if debug is True: pong = time.time()
+        #     if debug is True: print(clrmsg.DEBUG + 'colorize image in s:', pong-ping)
+        #     return img
+        # elif color is None:
+        #     color = [255,255,255]
+        if color is None:
             color = [255,255,255]
         ## rgb to gray scale if colored
         if img.ndim == 3:
@@ -1256,7 +1281,7 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
         imgC[:,:,1] = img*(color[1]/255.0)
         imgC[:,:,2] = img*(color[2]/255.0)
         if debug is True: pong = time.time()
-        if debug is True: print clrmsg.DEBUG + 'colorize image in s:', pong-ping
+        if debug is True: print(clrmsg.DEBUG + 'colorize image in s:', pong-ping)
         return imgC.astype(dtype=np.uint8)
 
     def colorCoder(self,code,side,layer):
@@ -1298,7 +1323,7 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
             side = self.label_selimg.text()
         if side == 'left':
             if self.layer1CHKbox_left is True:
-                if keepRGB is True:
+                if not (self.layer2CHKbox_left, self.layer3CHKbox_left, self.img_left_overlay):
                     image_list = [self.img_adj_left_layer1]
                 else:
                     image_list = [self.colorizeImage(self.img_adj_left_layer1,color=self.colorCoder(self.layer1Color_left,'left',1))]
@@ -1315,14 +1340,17 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
             ## Remove image (item)
             self.sceneLeft.removeItem(self.pixmap_item_left)
             self.pixmap_left = self.cv2Qimage(img_blend)
-            self.pixmap_item_left = QtGui.QGraphicsPixmapItem(self.pixmap_left, None, self.sceneLeft)
+            self.pixmap_item_left = self.sceneLeft.addPixmap(self.pixmap_left)
             ## Put exchanged image into background
-            QtGui.QGraphicsItem.stackBefore(self.pixmap_item_left, self.sceneLeft.items()[-1])
+            QtWidgets.QGraphicsItem.stackBefore(self.pixmap_item_left, list(self.sceneLeft.items())[-1])
             ## fix bug, where markers vanished behind image, by setting z value low enough
             self.pixmap_item_left.setZValue(-10)
         elif side == 'right':
             if self.layer1CHKbox_right is True:
-                image_list = [self.colorizeImage(self.img_adj_right_layer1,color=self.colorCoder(self.layer1Color_right,'right',1))]
+                if not (self.layer2CHKbox_right, self.layer3CHKbox_right, self.img_right_overlay):
+                    image_list = [self.img_adj_right_layer1]
+                else:
+                    image_list = [self.colorizeImage(self.img_adj_right_layer1,color=self.colorCoder(self.layer1Color_right,'right',1))]
             else:
                 image_list = []
             if self.img_right_layer2 is not None and self.layer2CHKbox_right is True:
@@ -1336,16 +1364,16 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
             ## Remove image (item)
             self.sceneRight.removeItem(self.pixmap_item_right)
             self.pixmap_right = self.cv2Qimage(img_blend)
-            self.pixmap_item_right = QtGui.QGraphicsPixmapItem(self.pixmap_right, None, self.sceneRight)
+            self.pixmap_item_right = self.sceneRight.addPixmap(self.pixmap_right)
             ## Put exchanged image into background
-            QtGui.QGraphicsItem.stackBefore(self.pixmap_item_right, self.sceneRight.items()[-1])
+            QtWidgets.QGraphicsItem.stackBefore(self.pixmap_item_right, list(self.sceneRight.items())[-1])
             ## fix bug, where markers vanished behind image, by setting z value low enough
             self.pixmap_item_right.setZValue(-10)
         if save is True:
             timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
             cv2.imwrite(os.path.join(self.workingdir,timestamp+"_image.tif"), cv2.cvtColor(img_blend,cv2.COLOR_RGB2BGR))
         if debug is True: pong = time.time()
-        if debug is True: print clrmsg.DEBUG + 'displaying image in s:', pong-ping
+        if debug is True: print(clrmsg.DEBUG + 'displaying image in s:', pong-ping)
 
     def blendImages(self,images,blendmode='screen'):
         """
@@ -1367,7 +1395,7 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
                     elif blendmode == 'minimum':
                         blend = np.minimum(blend,images[i])
             if debug is True: pong = time.time()
-            if debug is True: print clrmsg.DEBUG + 'blending images in s:', pong-ping
+            if debug is True: print(clrmsg.DEBUG + 'blending images in s:', pong-ping)
             return blend.astype(dtype=np.uint8)
 
     def layerCtrl(self,layer,load=False):
@@ -1383,8 +1411,8 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
             if self.label_selimg.text() == 'left':
                 self.layer2CHKbox_left = self.checkBox_layer2.isChecked()
                 if self.img_left_layer2 is None and self.checkBox_layer2.isChecked() or load is True:
-                    path = str(QtGui.QFileDialog.getOpenFileName(
-                        None,"Select image file", self.workingdir,"Image Files (*.tif *.tiff);; All (*.*)"))
+                    path = str(QtWidgets.QFileDialog.getOpenFileName(
+                        None,"Select image file", self.workingdir,"Image Files (*.tif *.tiff);; All (*.*)")[0])
                     self.activateWindow()
                     if path == '':
                         if load is True:
@@ -1395,23 +1423,29 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
                             return
                     # path = '/Users/jan/Desktop/correlation_test_dataset/single_tif_files/single_tif_files_1.tif'
                     self.img_left_layer2,self.sceneLeft.imagetype_layer2,self.imgstack_left_layer2 = self.imread(path)
+                    if self.img_left_layer2 is None:
+                        self.layer2CHKbox_left = False
+                        self.checkBox_layer2.setChecked(False)
+                        return
                     self.img_adj_left_layer2 = np.copy(self.img_left_layer2)
-                    if self.sceneLeft.imagetype_layer2 != self.sceneLeft.imagetype:
-                        QtGui.QMessageBox.critical(
+                    # image type check, exception for 2D RGB and gray scale images
+                    if self.sceneLeft.imagetype_layer2 != self.sceneLeft.imagetype and not all(x in (5,9,21,25) for x in (self.sceneLeft.imagetype,self.sceneLeft.imagetype_layer2)):
+                        QtWidgets.QMessageBox.critical(
                             self,"Warning", "This image file does not seem to be of the same kind as the first image!")
                         self.img_left_layer2,self.sceneLeft.imagetype_layer2,self.imgstack_left_layer2 = None, None, None
                         self.layer2CHKbox_left = False
                         self.checkBox_layer2.setChecked(False)
-                    elif self.imgstack_left_layer1 is not None and self.imgstack_left_layer2.shape != self.imgstack_left_layer1.shape:
-                        QtGui.QMessageBox.critical(
+                    elif self.imgstack_left_layer1 is not None and self.imgstack_left_layer2.shape[0:2] != self.imgstack_left_layer1.shape[0:2]:
+                        QtWidgets.QMessageBox.critical(
                             self,"Warning",
                             "This image file does not have the same dimensions as the first image: \nNeeds to be {0}\nbut is{1}".format(
                                 self.imgstack_left_layer1.shape, self.imgstack_left_layer2.shape))
                         self.img_left_layer2,self.sceneLeft.imagetype_layer2,self.imgstack_left_layer2 = None, None, None
                         self.layer2CHKbox_left = False
                         self.checkBox_layer2.setChecked(False)
-                    elif self.imgstack_left_layer1 is None and self.img_left_layer2.shape != self.img_left_layer1.shape:
-                        QtGui.QMessageBox.critical(
+                    # dimension check, only first two dimensions to make exception for 2D RGB (y,x,c) and gray scale images, 3D data has format (z,y,x)
+                    elif self.imgstack_left_layer1 is None and self.img_left_layer2.shape[0:2] != self.img_left_layer1.shape[0:2]:
+                        QtWidgets.QMessageBox.critical(
                             self,"Warning",
                             "This image file does not have the same dimensions as the first image: \nNeeds to be {0}\nbut is{1}".format(
                                 self.img_left_layer1.shape, self.img_left_layer2.shape))
@@ -1431,8 +1465,8 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
             else:
                 self.layer2CHKbox_right = self.checkBox_layer2.isChecked()
                 if self.img_right_layer2 is None and self.checkBox_layer2.isChecked() or load is True:
-                    path = str(QtGui.QFileDialog.getOpenFileName(
-                        None,"Select image file", self.workingdir,"Image Files (*.tif *.tiff);; All (*.*)"))
+                    path = str(QtWidgets.QFileDialog.getOpenFileName(
+                        None,"Select image file", self.workingdir,"Image Files (*.tif *.tiff);; All (*.*)")[0])
                     self.activateWindow()
                     if path == '':
                         if load is True:
@@ -1443,23 +1477,29 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
                             return
                     # path = '/Users/jan/Desktop/correlation_test_dataset/single_tif_files/single_tif_files_1.tif'
                     self.img_right_layer2,self.sceneRight.imagetype_layer2,self.imgstack_right_layer2 = self.imread(path)
+                    if self.img_right_layer2 is None:
+                        self.layer2CHKbox_right = False
+                        self.checkBox_layer2.setChecked(False)
+                        return
                     self.img_adj_right_layer2 = np.copy(self.img_right_layer2)
-                    if self.sceneRight.imagetype_layer2 != self.sceneRight.imagetype:
-                        QtGui.QMessageBox.critical(
+                    # image type check, exception for 2D RGB and gray scale images
+                    if self.sceneRight.imagetype_layer2 != self.sceneRight.imagetype and not all(x in (5,9,21,25) for x in (self.sceneRight.imagetype,self.sceneRight.imagetype_layer2)):
+                        QtWidgets.QMessageBox.critical(
                             self,"Warning", "This image file does not seem to be of the same kind as the first image!")
                         self.img_right_layer2,self.sceneRight.imagetype_layer2,self.imgstack_right_layer2 = None, None, None
                         self.layer2CHKbox_right = False
                         self.checkBox_layer2.setChecked(False)
                     elif self.imgstack_right_layer1 is not None and self.imgstack_right_layer2.shape != self.imgstack_right_layer1.shape:
-                        QtGui.QMessageBox.critical(
+                        QtWidgets.QMessageBox.critical(
                             self,"Warning",
                             "This image file does not have the same dimensions as the first image: \nNeeds to be {0}\nbut is{1}".format(
                                 self.imgstack_right_layer1.shape, self.imgstack_right_layer2.shape))
                         self.img_right_layer2,self.sceneRight.imagetype_layer2,self.imgstack_right_layer2 = None, None, None
                         self.layer2CHKbox_right = False
                         self.checkBox_layer2.setChecked(False)
-                    elif self.imgstack_right_layer1 is None and self.img_right_layer2.shape != self.img_right_layer1.shape:
-                        QtGui.QMessageBox.critical(
+                    # dimension check, only first two dimensions to make exception for 2D RGB (y,x,c) and gray scale images, 3D data has format (z,y,x)
+                    elif self.imgstack_right_layer1 is None and self.img_right_layer2.shape[0:2] != self.img_right_layer1.shape[0:2]:
+                        QtWidgets.QMessageBox.critical(
                             self,"Warning",
                             "This image file does not have the same dimensions as the first image: \nNeeds to be {0}\nbut is{1}".format(
                                 self.img_right_layer1.shape, self.img_right_layer2.shape))
@@ -1480,8 +1520,8 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
             if self.label_selimg.text() == 'left':
                 self.layer3CHKbox_left = self.checkBox_layer3.isChecked()
                 if self.img_left_layer3 is None and self.checkBox_layer3.isChecked() or load is True:
-                    path = str(QtGui.QFileDialog.getOpenFileName(
-                        None,"Select image file", self.workingdir,"Image Files (*.tif *.tiff);; All (*.*)"))
+                    path = str(QtWidgets.QFileDialog.getOpenFileName(
+                        None,"Select image file", self.workingdir,"Image Files (*.tif *.tiff);; All (*.*)")[0])
                     self.activateWindow()
                     if path == '':
                         if load is True:
@@ -1492,23 +1532,27 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
                             return
                     # path = '/Users/jan/Desktop/correlation_test_dataset/single_tif_files/single_tif_files_1.tif'
                     self.img_left_layer3,self.sceneLeft.imagetype_layer3,self.imgstack_left_layer3 = self.imread(path)
+                    if self.img_right_layer3 is None:
+                        self.layer3CHKbox_left = False
+                        self.checkBox_layer3.setChecked(False)
+                        return
                     self.img_adj_left_layer3 = np.copy(self.img_left_layer3)
-                    if self.sceneLeft.imagetype_layer3 != self.sceneLeft.imagetype:
-                        QtGui.QMessageBox.critical(
+                    if self.sceneLeft.imagetype_layer3 != self.sceneLeft.imagetype and not all(x in (5,9,21,25) for x in (self.sceneLeft.imagetype,self.sceneLeft.imagetype_layer3)):
+                        QtWidgets.QMessageBox.critical(
                             self,"Warning", "This image file does not seem to be of the same kind as the first image!")
                         self.img_left_layer3,self.sceneLeft.imagetype_layer3,self.imgstack_left_layer3 = None, None, None
                         self.layer3CHKbox_left = False
                         self.checkBox_layer3.setChecked(False)
                     elif self.imgstack_left_layer1 is not None and self.imgstack_left_layer3.shape != self.imgstack_left_layer1.shape:
-                        QtGui.QMessageBox.critical(
+                        QtWidgets.QMessageBox.critical(
                             self,"Warning",
                             "This image file does not have the same dimensions as the first image: \nNeeds to be {0}\nbut is{1}".format(
                                 self.imgstack_left_layer1.shape, self.imgstack_left_layer3.shape))
                         self.img_left_layer3,self.sceneLeft.imagetype_layer3,self.imgstack_left_layer3 = None, None, None
                         self.layer3CHKbox_left = False
                         self.checkBox_layer3.setChecked(False)
-                    elif self.imgstack_left_layer1 is None and self.img_left_layer3.shape != self.img_left_layer1.shape:
-                        QtGui.QMessageBox.critical(
+                    elif self.imgstack_left_layer1 is None and self.img_left_layer3.shape[0:2] != self.img_left_layer1.shape[0:2]:
+                        QtWidgets.QMessageBox.critical(
                             self,"Warning",
                             "This image file does not have the same dimensions as the first image: \nNeeds to be {0}\nbut is{1}".format(
                                 self.img_left_layer1.shape, self.img_left_layer3.shape))
@@ -1528,8 +1572,8 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
             else:
                 self.layer3CHKbox_right = self.checkBox_layer3.isChecked()
                 if self.img_right_layer3 is None and self.checkBox_layer3.isChecked() or load is True:
-                    path = str(QtGui.QFileDialog.getOpenFileName(
-                        None,"Select image file", self.workingdir,"Image Files (*.tif *.tiff);; All (*.*)"))
+                    path = str(QtWidgets.QFileDialog.getOpenFileName(
+                        None,"Select image file", self.workingdir,"Image Files (*.tif *.tiff);; All (*.*)")[0])
                     self.activateWindow()
                     if path == '':
                         if load is True:
@@ -1540,23 +1584,27 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
                             return
                     # path = '/Users/jan/Desktop/correlation_test_dataset/single_tif_files/single_tif_files_1.tif'
                     self.img_right_layer3,self.sceneRight.imagetype_layer3,self.imgstack_right_layer3 = self.imread(path)
+                    if self.img_right_layer3 is None:
+                        self.layer3CHKbox_right = False
+                        self.checkBox_layer3.setChecked(False)
+                        return
                     self.img_adj_right_layer3 = np.copy(self.img_right_layer3)
-                    if self.sceneRight.imagetype_layer3 != self.sceneRight.imagetype:
-                        QtGui.QMessageBox.critical(
+                    if self.sceneRight.imagetype_layer3 != self.sceneRight.imagetype and not all(x in (5,9,21,25) for x in (self.sceneRight.imagetype,self.sceneRight.imagetype_layer3)):
+                        QtWidgets.QMessageBox.critical(
                             self,"Warning", "This image file does not seem to be of the same kind as the first image!")
                         self.img_right_layer3,self.sceneRight.imagetype_layer3,self.imgstack_right_layer3 = None, None, None
                         self.layer3CHKbox_right = False
                         self.checkBox_layer3.setChecked(False)
-                    elif self.imgstack_right_layer1 is not None and self.imgstack_right_layer3.shape != self.imgstack_right_layer1.shape:
-                        QtGui.QMessageBox.critical(
+                    elif self.imgstack_right_layer1 is not None and self.imgstack_right_layer3.shape[0:2] != self.imgstack_right_layer1.shape[0:2]:
+                        QtWidgets.QMessageBox.critical(
                             self,"Warning",
                             "This image file does not have the same dimensions as the first image: \nNeeds to be {0}\nbut is{1}".format(
                                 self.imgstack_right_layer1.shape, self.imgstack_right_layer3.shape))
                         self.img_right_layer3,self.sceneRight.imagetype_layer3,self.imgstack_right_layer3 = None, None, None
                         self.layer3CHKbox_right = False
                         self.checkBox_layer3.setChecked(False)
-                    elif self.imgstack_right_layer1 is None and self.img_right_layer3.shape != self.img_right_layer1.shape:
-                        QtGui.QMessageBox.critical(
+                    elif self.imgstack_right_layer1 is None and self.img_right_layer3.shape[0:2] != self.img_right_layer1.shape[0:2]:
+                        QtWidgets.QMessageBox.critical(
                             self,"Warning",
                             "This image file does not have the same dimensions as the first image: \nNeeds to be {0}\nbut is{1}".format(
                                 self.img_right_layer1.shape, self.img_right_layer3.shape))
@@ -1607,7 +1655,7 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
         elif side == 'right':
             model = self.modelRight
         ## Export Dialog. Needs check for extension or add default extension
-        csv_file_out, filterdialog = QtGui.QFileDialog.getSaveFileNameAndFilter(
+        csv_file_out, filterdialog = QtWidgets.QFileDialog.getSaveFileName(
             self, 'Export file as',
             os.path.dirname(self.leftImage) if side == 'left' else os.path.dirname(self.rightImage),
             "Tabstop separated (*.csv *.txt);;Comma separated (*.csv *.txt)")
@@ -1621,7 +1669,7 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
         ## bugfix for KDE file dialog
         side = self.label_selectedTable.text()
 
-        csv_file_in, filterdialog = QtGui.QFileDialog.getOpenFileNameAndFilter(
+        csv_file_in, filterdialog = QtWidgets.QFileDialog.getOpenFileName(
             self, 'Import file as',
             os.path.dirname(self.leftImage) if side == 'left' else os.path.dirname(self.rightImage),
             "Tabstop separated (*.csv *.txt);;Comma separated (*.csv *.txt)")
@@ -1662,7 +1710,7 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
         listarray = []
         for rowNumber in range(*rows):
             fields = [
-                    model.data(model.index(rowNumber, columnNumber), QtCore.Qt.DisplayRole).toFloat()[0]
+                    float(model.data(model.index(rowNumber, columnNumber), QtCore.Qt.DisplayRole))
                     for columnNumber in range(model.columnCount())]
             listarray.append(fields)
         return np.array(listarray).astype(np.float)
@@ -1714,13 +1762,13 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
                 img = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
         else:
             def corrMsgBox(self,msg):
-                print 'message box'
-                msgBox = QtGui.QMessageBox()
-                msgBox.setIcon(QtGui.QMessageBox.Question)
+                print('message box')
+                msgBox = QtWidgets.QMessageBox()
+                msgBox.setIcon(QtWidgets.QMessageBox.Question)
                 msgBox.setText(msg)
-                l2rButton = msgBox.addButton("Left to Right", QtGui.QMessageBox.ActionRole)
-                r2lButton = msgBox.addButton("Right to Left", QtGui.QMessageBox.ActionRole)
-                abortButton = msgBox.addButton(QtGui.QMessageBox.Cancel)
+                l2rButton = msgBox.addButton("Left to Right", QtWidgets.QMessageBox.ActionRole)
+                r2lButton = msgBox.addButton("Right to Left", QtWidgets.QMessageBox.ActionRole)
+                abortButton = msgBox.addButton(QtWidgets.QMessageBox.Cancel)
                 msgBox.exec_()
                 if msgBox.clickedButton() == l2rButton:
                     return "l2r"
@@ -1758,7 +1806,7 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
                     ## Need RGB for colored markers
                     img = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
                 imageProps = None
-                # QtGui.QMessageBox.critical(self, "Data Structure",'Both datasets contain only 3D information. I need one 3D and one 2D dataset')
+                # QtWidgets.QMessageBox.critical(self, "Data Structure",'Both datasets contain only 3D information. I need one 3D and one 2D dataset')
                 # raise ValueError('Both datasets contain only 3D information. I need one 3D and one 2D dataset')
             elif '{0:b}'.format(self.sceneLeft.imagetype)[-1] == '1' and '{0:b}'.format(self.sceneRight.imagetype)[-1] == '1':
                 rowsLeft = self.modelLleft.rowCount()
@@ -1789,10 +1837,10 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
                     ## Need RGB for colored markers
                     img = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
                 imageProps = None
-                # QtGui.QMessageBox.critical(self, "Data Structure",'Both datasets contain only 2D information. I need one 3D and one 2D dataset')
+                # QtWidgets.QMessageBox.critical(self, "Data Structure",'Both datasets contain only 2D information. I need one 3D and one 2D dataset')
                 # raise ValueError('Both datasets contain only 2D information. I need one 3D and one 2D dataset')
             else:
-                QtGui.QMessageBox.critical(self, "Data Structure",'Cannot determine if datasets are 2D or 3D')
+                QtWidgets.QMessageBox.critical(self, "Data Structure",'Cannot determine if datasets are 2D or 3D')
                 raise ValueError('Cannot determine if datasets are 2D or 3D')
         ## variables for dataset validation. The amount of markers from the 2D and 3D model have to be in corresponding order.
         ## All extra rows in the 3D model are used as POIs.
@@ -1821,10 +1869,10 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
                                                         imageProps=imageProps
                                                         )
             else:
-                QtGui.QMessageBox.critical(self, "Data Structure", "The two datasets do not contain the same amount of markers!")
+                QtWidgets.QMessageBox.critical(self, "Data Structure", "The two datasets do not contain the same amount of markers!")
                 return
         else:
-            QtGui.QMessageBox.critical(self, "Data Structure",'At least THREE markers are needed to do the correlation')
+            QtWidgets.QMessageBox.critical(self, "Data Structure",'At least THREE markers are needed to do the correlation')
             return
 
         transf_3d = self.correlation_results[1]
@@ -1982,7 +2030,7 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
             self.tableView_results.setColumnWidth(2, 86)
 
         else:
-            # QtGui.QMessageBox.critical(self, "Error", "No data to display!")
+            # QtWidgets.QMessageBox.critical(self, "Error", "No data to display!")
             pass
 
     def showSelectedResidual(self,doubleclick=False):
@@ -2005,15 +2053,15 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
             rows = set(index.row() for index in indices)
             ## Select rows (only one row selectable in the results table)
             for row in rows:
-                markerNr = int(self.modelResultsProxy.data(self.modelResultsProxy.index(row, 0)).toString())-1
+                markerNr = int(self.modelResultsProxy.data(self.modelResultsProxy.index(row, 0)))-1
                 tableView1.selectRow(markerNr)
                 tableView2.selectRow(markerNr)
         else:
             tableView1.clearSelection()
             tableView2.clearSelection()
         if doubleclick is True:
-            if debug is True: print clrmsg.DEBUG + 'double click'
-            if debug is True: print clrmsg.DEBUG, graphicsView.transform().m11(), graphicsView.transform().m22()
+            if debug is True: print(clrmsg.DEBUG + 'double click')
+            if debug is True: print(clrmsg.DEBUG, graphicsView.transform().m11(), graphicsView.transform().m22())
             graphicsView.setTransform(QtGui.QTransform(
                 20,  # m11
                 graphicsView.transform().m12(),
@@ -2025,19 +2073,19 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
                 graphicsView.transform().m32(),
                 graphicsView.transform().m33(),
                 ))
-            if debug is True: print clrmsg.DEBUG, graphicsView.transform().m11(), graphicsView.transform().m22()
+            if debug is True: print(clrmsg.DEBUG, graphicsView.transform().m11(), graphicsView.transform().m22())
             ## Center on coordinate
             graphicsView.centerOn(
-                float(tableView1._model.data(tableView1._model.index(markerNr, 0)).toString()),
-                float(tableView1._model.data(tableView1._model.index(markerNr, 1)).toString()))
+                float(tableView1._model.data(tableView1._model.index(markerNr, 0))),
+                float(tableView1._model.data(tableView1._model.index(markerNr, 1))))
 
     def cmTableViewResults(self,pos):
         """Context menu for residuals table (results tab)"""
         indices = self.tableView_results.selectedIndexes()
         if indices:
-            cmApplyShift = QtGui.QAction('Apply shift to marker', self)
+            cmApplyShift = QtWidgets.QAction('Apply shift to marker', self)
             cmApplyShift.triggered.connect(self.applyResidualShift)
-            self.contextMenu = QtGui.QMenu(self)
+            self.contextMenu = QtWidgets.QMenu(self)
             self.contextMenu.addAction(cmApplyShift)
             self.contextMenu.popup(QtGui.QCursor.pos())
 
@@ -2055,27 +2103,27 @@ class MainWidget(QtGui.QMainWindow, Ui_WidgetWindow):
             tableView = self.tableView_right
             scene = self.sceneRight
         items = []
-        for item in scene.items():
-            if isinstance(item, QtGui.QGraphicsEllipseItem):
+        for item in list(scene.items()):
+            if isinstance(item, QtWidgets.QGraphicsEllipseItem):
                 items.append(item)
         if indices:
             ## Filter selected rows
             rows = set(index.row() for index in indices)
             ## Select rows (only one row selectable in the results table)
             for row in rows:
-                markerNr = int(self.modelResultsProxy.data(self.modelResultsProxy.index(row, 0)).toString())-1
-                if debug is True: print clrmsg.DEBUG + 'Marker number/background color (Qrgba)', markerNr, \
+                markerNr = int(self.modelResultsProxy.data(self.modelResultsProxy.index(row, 0)))-1
+                if debug is True: print(clrmsg.DEBUG + 'Marker number/background color (Qrgba)', markerNr, \
                     self.modelResults.itemFromIndex(
-                        self.modelResultsProxy.mapToSource((self.modelResultsProxy.index(row, 0)))).background().color().rgba()
+                        self.modelResultsProxy.mapToSource((self.modelResultsProxy.index(row, 0)))).background().color().rgba())
                 if self.modelResults.itemFromIndex(self.modelResultsProxy.mapToSource((
                         self.modelResultsProxy.index(row, 0)))).background().color().rgba() == 4278190080:
                     BackColor = (50,220,175,100)
                     ForeColor = (180,180,180,255)
                     items[markerNr].setPos(
                         float(tableView._model.data(
-                            tableView._model.index(markerNr, 0)).toString())+self.correlation_results[3][0,markerNr],
+                            tableView._model.index(markerNr, 0)))+self.correlation_results[3][0,markerNr],
                         float(tableView._model.data(
-                            tableView._model.index(markerNr, 1)).toString())+self.correlation_results[3][1,markerNr])
+                            tableView._model.index(markerNr, 1)))+self.correlation_results[3][1,markerNr])
                     self.modelResults.itemFromIndex(self.modelResultsProxy.mapToSource((
                         self.modelResultsProxy.index(row, 0)))).setBackground(QtGui.QColor(*BackColor))
                     self.modelResults.itemFromIndex(self.modelResultsProxy.mapToSource((
@@ -2102,7 +2150,7 @@ class SplashScreen():
 
         The splash screen, besides being fancy, shows the path to image being loaded at the moment.
         """
-        QtGui.QApplication.processEvents()
+        QtWidgets.QApplication.processEvents()
         ## Load splash screen image
         splash_pix = QtGui.QPixmap(os.path.join(execdir,'icons','SplashScreen.png'))
         ## Add version
@@ -2114,12 +2162,12 @@ class SplashScreen():
             splash_pix.size().width()-3,splash_pix.size().height()-1,QtCore.Qt.AlignBottom | QtCore.Qt.AlignRight, __version__)
         painter.end()
         ## Show splash screen
-        self.splash = QtGui.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
+        self.splash = QtWidgets.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
         self.splash.setMask(splash_pix.mask())
         self.splash.show()
         self.splash.showMessage("Initializing...",color=QtCore.Qt.white)
         ## Needed to receive mouse clicks to hide splash screen
-        QtGui.QApplication.processEvents()
+        QtWidgets.QApplication.processEvents()
 
         # Simulate something that takes time
         time.sleep(1)
@@ -2191,28 +2239,28 @@ class Main():
         try:
             del self.window
         except Exception as e:
-            if debug is True: print clrmsg.DEBUG + str(e)
+            if debug is True: print(clrmsg.DEBUG + str(e))
 
 
 if __name__ == "__main__":
     if debug is True:
-        print clrmsg.DEBUG + 'Debug Test'
-        print clrmsg.OK + 'OK Test'
-        print clrmsg.ERROR + 'Error Test'
-        print clrmsg.INFO + 'Info Test'
-        print clrmsg.INFO + 'Info Test'
-        print clrmsg.WARNING + 'Warning Test'
-        print '='*20, 'Initializing', '='*20
+        print(clrmsg.DEBUG + 'Debug Test')
+        print(clrmsg.OK + 'OK Test')
+        print(clrmsg.ERROR + 'Error Test')
+        print(clrmsg.INFO + 'Info Test')
+        print(clrmsg.INFO + 'Info Test')
+        print(clrmsg.WARNING + 'Warning Test')
+        print('='*20, 'Initializing', '='*20)
 
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
 
     ## File dialogs for standalone mode
     ## *.png *.jpg *.bmp not yet supported
-    left = str(QtGui.QFileDialog.getOpenFileName(
-        None,"Select first image file for correlation", execdir,"Image Files (*.tif *.tiff);; All (*.*)"))
+    left = str(QtWidgets.QFileDialog.getOpenFileName(
+        None,"Select first image file for correlation", execdir,"Image Files (*.tif *.tiff);; All (*.*)")[0])
     if left == '': sys.exit()
-    right = str(QtGui.QFileDialog.getOpenFileName(
-        None,"Select second image file for correlation", execdir,"Image Files (*.tif *.tiff);; All (*.*)"))
+    right = str(QtWidgets.QFileDialog.getOpenFileName(
+        None,"Select second image file for correlation", execdir,"Image Files (*.tif *.tiff);; All (*.*)")[0])
     if right == '': sys.exit()
     # left = '/Users/jan/Desktop/correlation_test_dataset/IB_030.tif'
     # right = '/Users/jan/Desktop/correlation_test_dataset/LM_green_image_stack_reslized.tif'

@@ -230,7 +230,7 @@ def is_multi_file(file_name):
     Argument:
       - file_name: one file name or a list (tuple) of file names
     """
-    if isinstance(file_name, (str, unicode)):
+    if isinstance(file_name, str):
         return False
     elif isinstance(file_name, (tuple, list)):
         return True

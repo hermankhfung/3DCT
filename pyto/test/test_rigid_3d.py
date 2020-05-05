@@ -520,11 +520,11 @@ class TestRigid3D(np_test.TestCase):
             x=x_cm, y=scale * np.dot(r, x_cm)[:2,:], scale=None, cm=False, 
             use_jac=True, init=[-0.4, -0.41, 0.8, 0.2, 1])
         if abs(res.optimizeResult.fun) > 0.001:
-            print "\n"*2
-            print "="*50
-            print "OPTIMIZATION FAILED! Known problem on some platform. Please ignore!"
-            print "="*50
-            print "\n"*2
+            print("\n"*2)
+            print("="*50)
+            print("OPTIMIZATION FAILED! Known problem on some platform. Please ignore!")
+            print("="*50)
+            print("\n"*2)
         else:
             np_test.assert_almost_equal(res.optimizeResult.fun, 0, decimal=3)
             np_test.assert_almost_equal(

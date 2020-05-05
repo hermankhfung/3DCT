@@ -14,8 +14,8 @@ import numpy
 import scipy
 import scipy.linalg as linalg
 
-from points import Points
-from affine import Affine
+from .points import Points
+from .affine import Affine
 
 class Affine2D(Affine):
     """

@@ -21,7 +21,7 @@
 """
 # ======================================================================================================================
 import pytest
-from PyQt4 import QtGui
+from PyQt5 import QtWidgets
 import sys
 import os
 import numpy as np
@@ -32,12 +32,12 @@ execdir = os.path.dirname(os.path.realpath(__file__))
 maindir_ = execdir
 sys.path.append(maindir_)
 
-app = QtGui.QApplication(sys.argv)
+app = QtWidgets.QApplication(sys.argv)
 
 
 @pytest.fixture(scope='session')
 def maindir():
-	print maindir_
+	print(maindir_)
 	return maindir_
 
 
@@ -73,7 +73,7 @@ def insertSphere(volIn, pos, radius, blur=False):
 		if pos[2] < radius or pos[2] > volIn.shape[2] - radius:
 			raise Exception("Sphere's z position too close to volume boundaries! Returning original volume...")
 	except Exception as e:
-		print "ERROR:", e
+		print("ERROR:", e)
 		return volIn
 
 	## diameter

@@ -65,7 +65,7 @@ def get_deep_name(name, mode='_'):
         name = attributes.pop()
 
     else:
-        raise ValueError, "Argument mode can be '_', or 'last' but not " + mode
+        raise ValueError("Argument mode can be '_', or 'last' but not " + mode)
 
     return name
     

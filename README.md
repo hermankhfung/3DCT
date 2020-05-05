@@ -10,7 +10,7 @@ Further information can be found on [http://www.biochem.mpg.de/en/rd/baumeister]
 
 The Toolbox is written in Python 2.7 and comes with a PyQt4 GUI. Further dependencies as of now are:
 
-* PyQt4 [^1]
+* PyQt5 [^1]
 + numpy [^2]
 + scipy [^2]
 + matplotlib [^2]

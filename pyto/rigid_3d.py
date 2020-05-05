@@ -16,7 +16,7 @@ import scipy as sp
 # added for sp.stat
 import scipy.stats
 
-from affine import Affine
+from .affine import Affine
 
 class Rigid3D(Affine):
     """
@@ -773,7 +773,7 @@ class Rigid3D(Affine):
             x2 = x[:,:2]
 
         # find 2d affine
-        from affine_2d import Affine2D
+        from .affine_2d import Affine2D
         affine22 = Affine2D.find(x2, y, xy_axes=xy_axes)
 
         # find corresponding ck params
@@ -805,8 +805,8 @@ class Rigid3D(Affine):
         """
 
         # SV decompose gl 
-        from affine import Affine
-        from affine_2d import Affine2D
+        from .affine import Affine
+        from .affine_2d import Affine2D
         aff = Affine()
         u, p, s, v = aff.decomposeSV(gl=gl)
 
