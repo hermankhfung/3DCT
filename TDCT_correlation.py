@@ -1022,47 +1022,56 @@ class MainWidget(QtWidgets.QMainWindow, Ui_WidgetWindow):
 
     def pxSize(self,img_path,z=False):
         with tf.TiffFile(img_path) as tif:
-            for page in tif.pages:
-                for tag in list(page.tags.values()):
-                    if isinstance(tag.value, str):
-                        for keyword in ['PhysicalSizeX','PixelWidth','PixelSize'] if not z else ['PhysicalSizeZ','FocusStepSize']:
-                            tagposs = [m.start() for m in re.finditer(keyword, tag.value)]
-                            for tagpos in tagposs:
-                                if keyword == 'PhysicalSizeX' or keyword == 'PhysicalSizeZ':
-                                    for piece in tag.value[tagpos:tagpos+30].split('"'):
-                                        try:
-                                            pixelSize = float(piece)
-                                            if debug is True: print(clrmsg.DEBUG + "Pixel size from exif metakey:", keyword)
-                                            ## Value is in um from CorrSight/LA tiff files
-                                            if z:
-                                                pixelSize = pixelSize*1000
-                                            return pixelSize
-                                        except Exception as e:
-                                            if debug is True: print(clrmsg.DEBUG + "Pixel size parser:", e)
-                                            pass
-                                elif keyword == 'PixelWidth':
-                                    for piece in tag.value[tagpos:tagpos+30].split('='):
-                                        try:
-                                            try:
-                                                pixelSize = float(piece.strip().split('\r\n')[0])
-                                            except:
-                                                pixelSize = float(piece.strip().split(r'\r\n')[0])
-                                            if debug is True: print(clrmsg.DEBUG + "Pixel size from exif metakey:", keyword)
-                                            ## *1E6 because these values from SEM/FIB image is in m
-                                            return pixelSize*1E6
-                                        except Exception as e:
-                                            if debug is True: print(clrmsg.DEBUG + "Pixel size parser:", e)
-                                            pass
-                                elif keyword == 'PixelSize' or 'FocusStepSize':
-                                    for piece in tag.value[tagpos:tagpos+30].split('"'):
-                                        try:
-                                            pixelSize = float(piece)
-                                            if debug is True: print(clrmsg.DEBUG + "Pixel size from exif metakey:", keyword)
-                                            ## Value is in um from CorrSight/LA tiff files
-                                            return pixelSize
-                                        except Exception as e:
-                                            if debug is True: print(clrmsg.DEBUG + "Pixel size parser:", e)
-                                            pass
+            try:
+                pixelSize = float(tif.pages[0].tags['FEI_HELIOSs'].value['Scan']['PixelWidth'])
+                if debug is True: print(clrmsg.DEBUG + "Pixel size found. FEI_HELIOS standard.")
+                return pixelSize*1E6  # from meters to microns
+            except KeyError:
+                if debug is True: print(clrmsg.DEBUG + "Pixel size not found.")
+                return np.nan  # so imageProps is passed to correlation.main()
+        # Old pixel size parser
+        # with tf.TiffFile(img_path) as tif:
+        #     for page in tif.pages:
+        #         for tag in list(page.tags.values()):
+        #             if isinstance(tag.value, str):
+        #                 for keyword in ['PhysicalSizeX','PixelWidth','PixelSize'] if not z else ['PhysicalSizeZ','FocusStepSize']:
+        #                     tagposs = [m.start() for m in re.finditer(keyword, tag.value)]
+        #                     for tagpos in tagposs:
+        #                         if keyword == 'PhysicalSizeX' or keyword == 'PhysicalSizeZ':
+        #                             for piece in tag.value[tagpos:tagpos+30].split('"'):
+        #                                 try:
+        #                                     pixelSize = float(piece)
+        #                                     if debug is True: print(clrmsg.DEBUG + "Pixel size from exif metakey:", keyword)
+        #                                     ## Value is in um from CorrSight/LA tiff files
+        #                                     if z:
+        #                                         pixelSize = pixelSize*1000
+        #                                     return pixelSize
+        #                                 except Exception as e:
+        #                                     if debug is True: print(clrmsg.DEBUG + "Pixel size parser:", e)
+        #                                     pass
+        #                         elif keyword == 'PixelWidth':
+        #                             for piece in tag.value[tagpos:tagpos+30].split('='):
+        #                                 try:
+        #                                     try:
+        #                                         pixelSize = float(piece.strip().split('\r\n')[0])
+        #                                     except:
+        #                                         pixelSize = float(piece.strip().split(r'\r\n')[0])
+        #                                     if debug is True: print(clrmsg.DEBUG + "Pixel size from exif metakey:", keyword)
+        #                                     ## *1E6 because these values from SEM/FIB image is in m
+        #                                     return pixelSize*1E6
+        #                                 except Exception as e:
+        #                                     if debug is True: print(clrmsg.DEBUG + "Pixel size parser:", e)
+        #                                     pass
+        #                         elif keyword == 'PixelSize' or 'FocusStepSize':
+        #                             for piece in tag.value[tagpos:tagpos+30].split('"'):
+        #                                 try:
+        #                                     pixelSize = float(piece)
+        #                                     if debug is True: print(clrmsg.DEBUG + "Pixel size from exif metakey:", keyword)
+        #                                     ## Value is in um from CorrSight/LA tiff files
+        #                                     return pixelSize
+        #                                 except Exception as e:
+        #                                     if debug is True: print(clrmsg.DEBUG + "Pixel size parser:", e)
+        #                                     pass
 
     ## Convert opencv image (numpy array in BGR) to RGB QImage and return pixmap. Only takes 2D images
     def cv2Qimage(self,img,combobox=None):
@@ -1673,25 +1682,26 @@ class MainWidget(QtWidgets.QMainWindow, Ui_WidgetWindow):
             self, 'Import file as',
             os.path.dirname(self.leftImage) if side == 'left' else os.path.dirname(self.rightImage),
             "Tabstop separated (*.csv *.txt);;Comma separated (*.csv *.txt)")
-        self.activateWindow()
-        if str(filterdialog).startswith('Comma') is True:
-            itemlist = csvHandler.csv2list(csv_file_in,delimiter=",",parent=self,sniff=True)
-        elif str(filterdialog).startswith('Tabstop') is True:
-            itemlist = csvHandler.csv2list(csv_file_in,delimiter="\t",parent=self,sniff=True)
-        if side == 'left':
-            for item in itemlist: self.sceneLeft.addCircle(
-                float(item[0]),
-                float(item[1]),
-                float(item[2]) if len(item) > 2 else 0)
-            self.sceneLeft.itemsToModel()
-            # csvHandler.csvAppend2model(csv_file_in,self.modelLleft,delimiter="\t",parent=self,sniff=True)
-        elif side == 'right':
-            for item in itemlist: self.sceneRight.addCircle(
-                float(item[0]),
-                float(item[1]),
-                float(item[2]) if len(item) > 2 else 0)
-            self.sceneRight.itemsToModel()
-            # csvHandler.csvAppend2model(csv_file_in,self.modelRight,delimiter="\t",parent=self,sniff=True)
+        if csv_file_in != "":
+            self.activateWindow()
+            if str(filterdialog).startswith('Comma') is True:
+                itemlist = csvHandler.csv2list(csv_file_in,delimiter=",",parent=self,sniff=True)
+            elif str(filterdialog).startswith('Tabstop') is True:
+                itemlist = csvHandler.csv2list(csv_file_in,delimiter="\t",parent=self,sniff=True)
+            if side == 'left':
+                for item in itemlist: self.sceneLeft.addCircle(
+                    float(item[0]),
+                    float(item[1]),
+                    float(item[2]) if len(item) > 2 else 0)
+                self.sceneLeft.itemsToModel()
+                # csvHandler.csvAppend2model(csv_file_in,self.modelLleft,delimiter="\t",parent=self,sniff=True)
+            elif side == 'right':
+                for item in itemlist: self.sceneRight.addCircle(
+                    float(item[0]),
+                    float(item[1]),
+                    float(item[2]) if len(item) > 2 else 0)
+                self.sceneRight.itemsToModel()
+                # csvHandler.csvAppend2model(csv_file_in,self.modelRight,delimiter="\t",parent=self,sniff=True)
 
                                                 ##################### END #####################
                                                 ######     CSV - Point import/export    #######
@@ -2063,11 +2073,11 @@ class MainWidget(QtWidgets.QMainWindow, Ui_WidgetWindow):
             if debug is True: print(clrmsg.DEBUG + 'double click')
             if debug is True: print(clrmsg.DEBUG, graphicsView.transform().m11(), graphicsView.transform().m22())
             graphicsView.setTransform(QtGui.QTransform(
-                20,  # m11
+                10,  # m11
                 graphicsView.transform().m12(),
                 graphicsView.transform().m13(),
                 graphicsView.transform().m21(),
-                20,  # m22
+                10,  # m22
                 graphicsView.transform().m23(),
                 graphicsView.transform().m31(),
                 graphicsView.transform().m32(),

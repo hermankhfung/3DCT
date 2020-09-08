@@ -44,6 +44,12 @@ from . import TDCT_debug
 
 debug = TDCT_debug.debug
 style.use('fivethirtyeight')
+
+# Suppress deprecation warning from add_subplot() method
+import warnings
+from matplotlib.cbook.deprecation import MatplotlibDeprecationWarning
+warnings.filterwarnings('ignore', category=MatplotlibDeprecationWarning)
+
 ##############################
 # QTableViewCustom
 
@@ -58,9 +64,11 @@ class QTableViewCustom(QtWidgets.QTableView):
         """The parent is not mainWidget but QSplitter i.e. the main parent is callable by
         self.parent().parent() and not self.parent() when not using QSplitter. This may be
         subject to change, so to be flexible there is a check for QSplitter.
-        UPDATE: GUI now QMainWindow, i.e. aditional parent call"""
+        UPDATE: GUI now QMainWindow. Now held in widget in QSplitter"""
         if isinstance(self.parent(), QtWidgets.QSplitter):
             self.mainParent = self.parent().parent().parent()
+        else:
+            self.mainParent = self.parent().parent().parent().parent()
 
         self._drop = False
 
@@ -313,20 +321,16 @@ class QGraphicsSceneCustom(QtWidgets.QGraphicsScene):
         self.zValuesDict = {}
 
     def wheelEvent(self, event):
-        ## Scaling
         if event.delta() > 0:
             scalingFactor = 1.15
         else:
             scalingFactor = 1 / 1.15
+        mouse_position = event.scenePos()
+        view_center = self.parent().mapToScene(QtCore.QPoint(self.parent().width()//2,self.parent().height()//2))
+        new_center = mouse_position+(view_center-mouse_position)/scalingFactor
         self.parent().scale(scalingFactor, scalingFactor)
-        ## Center on mouse pos only if mouse moved mor then 25px
-        if (event.screenPos() - self.lastScreenPos).manhattanLength() > 25:
-            self.parent().centerOn(event.scenePos().x(), event.scenePos().y())
-            self.lastScenePos = event.scenePos()
-        else:
-            self.parent().centerOn(self.lastScenePos.x(), self.lastScenePos.y())
-        ## Save pos for precise scrolling, i.e. centering view only when mouse moved
-        self.lastScreenPos = event.screenPos()
+        self.parent().centerOn(new_center)
+        event.accept()
 
     def mousePressEvent(self, event):
         modifiers = QtWidgets.QApplication.keyboardModifiers()

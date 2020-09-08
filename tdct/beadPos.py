@@ -127,9 +127,9 @@ def getzGauss(x,y,img,parent=None,optimize=False,threshold=None,threshVal=0.6,cu
                 return x, y, poptZ[1]
             (height, xopt, yopt, width_x, width_y) = poptXY
             ## x and y are switched when applying the offset
-            x = int(x-cutout+yopt)
-            y = int(y-cutout+xopt)
-            data_z = img[:,y,x]
+            x = x-cutout+yopt
+            y = y-cutout+xopt
+            data_z = img[:,int(y),int(x)]
             data = np.array([np.arange(len(data_z)), data_z])
             poptZ, pcov = gaussfit(data,parent,hold=True)
             if parent: parent.refreshUI()
