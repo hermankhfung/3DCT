@@ -30,8 +30,8 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 import numpy as np
 
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 from matplotlib import style
 import matplotlib.patches as patches
@@ -546,7 +546,7 @@ class MatplotlibWidgetCustom(QtWidgets.QWidget):
         self.subplotScatter.scatter(x, y)
         self.subplotScatter.set_aspect(1.)
         if debug is True: print(x.min(), x.max(), y.min(), y.max())
-        limit = max([abs(x.min()), abs(x.max()), abs(y.min()), abs(y.max())]) + 0.2
+        limit = 1.125 * max([abs(x.min()), abs(x.max()), abs(y.min()), abs(y.max())]) + 0.2
         if debug is True: print(limit)
         self.subplotScatter.set_xlim(-limit, limit)
         self.subplotScatter.set_ylim(-limit, limit)
@@ -600,6 +600,7 @@ class MatplotlibWidgetCustom(QtWidgets.QWidget):
         self.axHisty.set_xticks([])
 
         # self.figure.set_dpi(200)
+        self.figure.tight_layout()
         self.canvas.draw()
 
     def xyPlot(self,*args,**kwargs):
@@ -613,6 +614,8 @@ class MatplotlibWidgetCustom(QtWidgets.QWidget):
         self.subplotXY.plot(*args,**kwargs)
         leg = self.subplotXY.legend(fontsize='small')
         leg.get_frame().set_alpha(0.5)
+        if len(self.figure.axes) == 1:
+            self.figure.tight_layout()
         self.canvas.draw()
 
     def matshowPlot(self,mat=None,contour=None,labelContour=''):

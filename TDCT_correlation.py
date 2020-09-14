@@ -2020,7 +2020,7 @@ class MainWidget(QtWidgets.QMainWindow, Ui_WidgetWindow):
             self.label_rms.setStyleSheet(self.stylesheet_green if transf.rmsError < 1 else self.stylesheet_orange)
 
             self.widget_matplotlib.setupScatterCanvas(width=4,height=4,dpi=52,toolbar=False)
-            self.widget_matplotlib.scatterPlot(x=delta2D[0,:],y=delta2D[1,:],frame=frame,framesize=framesize,xlabel="px",ylabel="px")
+            self.widget_matplotlib.scatterPlot(x=delta2D[0,:],y=delta2D[1,:],frame=frame,framesize=framesize)
 
             ## Populate tableView_results
             self.modelResults.removeRows(0,self.modelResults.rowCount())

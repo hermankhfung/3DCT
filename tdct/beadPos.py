@@ -105,9 +105,12 @@ def getzGauss(x,y,img,parent=None,optimize=False,threshold=None,threshVal=0.6,cu
         img = tf.imread(img)
     x = np.round(x).astype(int)
     y = np.round(y).astype(int)
-    data_z = img[:,y,x]
-    data = np.array([np.arange(len(data_z)), data_z])
-    poptZ, pcov = gaussfit(data,parent)
+    if 0 <= x < img.shape[-1] and 0 <= y < img.shape[-2]:
+        data_z = img[:,y,x]
+        data = np.array([np.arange(len(data_z)), data_z])
+        poptZ, pcov = gaussfit(data,parent)
+    else:
+        poptZ = [None, -1.0, None]
 
     if optimize is False:
         return poptZ[1]
@@ -115,10 +118,16 @@ def getzGauss(x,y,img,parent=None,optimize=False,threshold=None,threshVal=0.6,cu
         repeats = 5
         if clrmsg and debug is True: print(clrmsg.DEBUG + '2D Gaussian xy optimization running %.f at z = %.f' % (repeats,round(poptZ[1])))
         for repeat in range(repeats):
-            data = np.copy(img[
-                        int(round(poptZ[1])),
-                        int(y-cutout):int(y+cutout),
-                        int(x-cutout):int(x+cutout)])
+            if (cutout <= x < img.shape[-1]-cutout and
+                    cutout <= y < img.shape[-2]-cutout and
+                    0 <= poptZ[1] < img.shape[-3]-0.5):
+                data = np.copy(img[
+                            int(round(poptZ[1])),
+                            int(y-cutout):int(y+cutout),
+                            int(x-cutout):int(x+cutout)])
+            else:
+                print("Point(s) too close to edge or out of bounds.")
+                return x, y, poptZ[1]
             if threshold is not None:
                 threshold = data < data.max()-(data.max()-data.min())*threshVal
                 data[threshold] = 0
@@ -129,7 +138,10 @@ def getzGauss(x,y,img,parent=None,optimize=False,threshold=None,threshVal=0.6,cu
             ## x and y are switched when applying the offset
             x = x-cutout+yopt
             y = y-cutout+xopt
-            data_z = img[:,int(y),int(x)]
+            if 0 <= x < img.shape[-1] and 0 <= y < img.shape[-2]:
+                data_z = img[:,int(y),int(x)]
+            else:
+                return x, y, poptZ[1]
             data = np.array([np.arange(len(data_z)), data_z])
             poptZ, pcov = gaussfit(data,parent,hold=True)
             if parent: parent.refreshUI()
@@ -359,7 +371,10 @@ def fitgaussian(data,parent=None):
     def errorfunction(p):
         return np.ravel(gaussian(*p)(*np.indices(data.shape)) - data)
 
-    params = moments(data)
+    try:
+        params = moments(data)
+    except ValueError:
+        return None
     p, success = leastsq(errorfunction, params)
     if np.isnan(p).any():
         parent.widget_matplotlib.matshowPlot(
