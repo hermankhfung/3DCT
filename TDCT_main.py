@@ -310,7 +310,7 @@ class APP(QtWidgets.QMainWindow, Ui_MainWindow):
             pathValid = False
             if reply == QtWidgets.QMessageBox.Yes:
                 while True:
-                    newpath = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select directory", path))
+                    newpath = os.path.normpath(str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select directory", path)))
                     if newpath != "":
                         try:
                             testfile = tempfile.TemporaryFile(dir=newpath)
@@ -378,7 +378,7 @@ class APP(QtWidgets.QMainWindow, Ui_MainWindow):
         If path is selected for working directory, the working dir file list gets populated.
         """
         sender = self.sender()
-        path = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory", self.workingdir))
+        path = os.path.normpath(str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory", self.workingdir)))
         if path:
             if sender == self.toolButton_WorkingDirSelect:
                 workingdir = self.checkDirectoryPrivileges(path)
@@ -393,8 +393,8 @@ class APP(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         File selection. File path is displayed in corresponding QLineEdit GUI element.
         """
-        path = str(QtWidgets.QFileDialog.getOpenFileName(
-            None,"Select tiff image file", self.workingdir,"Image Files (*.tif *.tiff);; All (*.*)")[0])
+        path = os.path.normpath(str(QtWidgets.QFileDialog.getOpenFileName(
+            None,"Select tiff image file", self.workingdir,"Image Files (*.tif *.tiff);; All (*.*)")[0]))
         if path:
             pathLine.setText(path)
 

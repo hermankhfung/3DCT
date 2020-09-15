@@ -57,7 +57,10 @@ def csvAppend2model(csv_file_in,model,delimiter="\t",sniff=False,parent=None):
 
 def csv2list(csv_file_in,delimiter="\t",sniff=False,parent=None):
     if sniff is True:
-        delimiter = delimiterSniffer(csv_file_in, delimiter, parent)
+        try:
+            delimiter = delimiterSniffer(csv_file_in, delimiter, parent)
+        except csv.Error:
+            return []
     itemlist = []
     with open(csv_file_in) as csv_file:
         for row in csv.reader(csv_file, delimiter=delimiter):

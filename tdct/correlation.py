@@ -139,7 +139,7 @@ def write_results(
     """
 
     # open results file
-    res_file = open(res_file_name, 'w')
+    res_file = open(res_file_name, 'w', newline='')
 
     # header top
     header = common.make_top_header()

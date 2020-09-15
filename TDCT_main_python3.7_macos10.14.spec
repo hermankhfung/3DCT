@@ -64,4 +64,8 @@ app = BUNDLE(coll,
              name='3D Correlation Toolbox.app',
              icon=os.path.join(spec_root,'icons/3DCT_icon.icns'),
              bundle_identifier=None,
-             info_plist={'NSHighResolutionCapable': 'True'})
+             info_plist={
+                'NSHighResolutionCapable': 'True',
+                'CFBundleShortVersionString': '3.0.0',
+                'CFBundleVersion': '3.0.0'
+                })

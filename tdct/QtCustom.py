@@ -624,9 +624,9 @@ class MatplotlibWidgetCustom(QtWidgets.QWidget):
         if n < 2:
             for i in range(n):
                 self.figure.axes[i].change_geometry(n + 1, 1, i + 1)
-            # self.figure.subplots_adjust(hspace=0.5)
-            self.figure.tight_layout()
             self.subplotMat = self.figure.add_subplot(n + 1, 1, n + 1)
+            self.figure.tight_layout()
+            self.figure.subplots_adjust(bottom=0)
         # self.subplotMat.plot(np.arange(100),np.random.random(100)*10)
         # mat = tf.imread('/Users/jan/Desktop/dot2.tif')
         self.subplotMat.clear()
@@ -634,9 +634,9 @@ class MatplotlibWidgetCustom(QtWidgets.QWidget):
         self.subplotMat.contour(contour, cmap='Greys', linewidths=(1,))
         self.subplotMat.grid(False)
         self.subplotMat.text(
-            0.95, 0.03, labelContour, fontsize=12, horizontalalignment='right',
-            verticalalignment='bottom', transform=self.figure.transFigure)
-        self.subplotMat.set_anchor('W')
+            0.9, 0.2, labelContour, fontsize=12, horizontalalignment='right',
+            verticalalignment='center', transform=self.figure.transFigure)
+        self.subplotMat.set_anchor('SW')
         self.canvas.draw()
 
 

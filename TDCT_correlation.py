@@ -1684,24 +1684,27 @@ class MainWidget(QtWidgets.QMainWindow, Ui_WidgetWindow):
             "Tabstop separated (*.csv *.txt);;Comma separated (*.csv *.txt)")
         if csv_file_in != "":
             self.activateWindow()
-            if str(filterdialog).startswith('Comma') is True:
-                itemlist = csvHandler.csv2list(csv_file_in,delimiter=",",parent=self,sniff=True)
-            elif str(filterdialog).startswith('Tabstop') is True:
-                itemlist = csvHandler.csv2list(csv_file_in,delimiter="\t",parent=self,sniff=True)
-            if side == 'left':
-                for item in itemlist: self.sceneLeft.addCircle(
-                    float(item[0]),
-                    float(item[1]),
-                    float(item[2]) if len(item) > 2 else 0)
-                self.sceneLeft.itemsToModel()
-                # csvHandler.csvAppend2model(csv_file_in,self.modelLleft,delimiter="\t",parent=self,sniff=True)
-            elif side == 'right':
-                for item in itemlist: self.sceneRight.addCircle(
-                    float(item[0]),
-                    float(item[1]),
-                    float(item[2]) if len(item) > 2 else 0)
-                self.sceneRight.itemsToModel()
-                # csvHandler.csvAppend2model(csv_file_in,self.modelRight,delimiter="\t",parent=self,sniff=True)
+            try:
+                if str(filterdialog).startswith('Comma') is True:
+                    itemlist = csvHandler.csv2list(csv_file_in,delimiter=",",parent=self,sniff=True)
+                elif str(filterdialog).startswith('Tabstop') is True:
+                    itemlist = csvHandler.csv2list(csv_file_in,delimiter="\t",parent=self,sniff=True)
+                if side == 'left':
+                    for item in itemlist: self.sceneLeft.addCircle(
+                        float(item[0]),
+                        float(item[1]),
+                        float(item[2]) if len(item) > 2 else 0)
+                    self.sceneLeft.itemsToModel()
+                    # csvHandler.csvAppend2model(csv_file_in,self.modelLleft,delimiter="\t",parent=self,sniff=True)
+                elif side == 'right':
+                    for item in itemlist: self.sceneRight.addCircle(
+                        float(item[0]),
+                        float(item[1]),
+                        float(item[2]) if len(item) > 2 else 0)
+                    self.sceneRight.itemsToModel()
+                    # csvHandler.csvAppend2model(csv_file_in,self.modelRight,delimiter="\t",parent=self,sniff=True)
+            except ValueError:
+                return
 
                                                 ##################### END #####################
                                                 ######     CSV - Point import/export    #######
