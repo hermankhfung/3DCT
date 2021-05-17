@@ -9,13 +9,12 @@ Quadratic Interpolation of Spectral Peaks
 # @Author			: endolith
 # @Email			: endolith (at) gmail.com
 # @Credits			: https://gist.github.com/endolith/255291
-# @Maintainer		:
-# @Date				: 2015/12
+# @Date				: 2021/04
 # @Version			: 3DCT 2.3.0 module rev. 1
 # @Status			: stable
 # @Usage			:
 # @Notes			:
-# @Python_version	: 2.7.11
+# @Python_version	: 3.8.7
 """
 # ======================================================================================================================
 

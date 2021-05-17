@@ -4,6 +4,7 @@
 3D Correlation Toolbox - 3DCT
 
 Copyright (C) 2016  Jan Arnold
+Copyright (C) 2021  EMBL/Herman Fung, EMBL/Julia Mahamid
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -44,21 +45,18 @@ A test dataset can be downloaded here: http://3dct.semper.space/download/3D_corr
 # @Title			: TDCT_main
 # @Project			: 3DCTv2
 # @Description		: 3D Correlation Toolbox - 3DCT
-# @Author			: Jan Arnold
-# @Email			: jan.arnold (at) coraxx.net
-# @Copyright		: Copyright (C) 2016  Jan Arnold
+# @Author			: Jan Arnold, Herman Fung, Julia Mahamid
+# @Email			: jan.arnold (at) coraxx.net, herman.fung (at) embl.de
+# @Copyright		: Copyright (C) 2016  Jan Arnold, Copyright (C) 2021  EMBL/Herman Fung, EMBL/Julia Mahamid
 # @License			: GPLv3 (see LICENSE file)
 # @Credits			: Vladan Lucic for the 3D to 2D correlation code
 # 					: and the stackoverflow community for all the bits and pieces
-# @Maintainer		: Jan Arnold
-# 					  Max-Planck-Institute of Biochemistry
-# 					  Department of Molecular Structural Biology
-# @Date				: 2015/08
+# @Date				: 2021/04
 # @Version			: 3DCT 2.3.0
 # @Status			: stable
 # @Usage			: python -u TDCT_main.py
 # @Notes			:
-# @Python_version	: 2.7.11
+# @Python_version	: 3.8.7
 """
 # ======================================================================================================================
 
@@ -266,7 +264,7 @@ class APP(QtWidgets.QMainWindow, Ui_MainWindow):
             splash = MovieSplashScreen(movie)
             splash.show()
             if debug is True: print(clrmsg.DEBUG, 'splash screen running')
-            while movie.state() == QtWidgets.QMovie.Running:
+            while movie.state() == QtGui.QMovie.Running:
                 QtWidgets.QApplication.processEvents()
                 time.sleep(0.01)
             if debug is True: print(clrmsg.DEBUG, 'splash screen stopped')

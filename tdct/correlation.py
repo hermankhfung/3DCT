@@ -107,8 +107,7 @@ The procedure is organized as follows:
 # @License			: GPLv3 (see LICENSE file)
 # @Email			:
 # @Credits			:
-# @Maintainer		: Vladan Lucic, Jan Arnold
-# @Date				: 2015/10
+# @Date				: 2021/04
 # @Version			: 3DCT 2.3.0 module rev. 3
 # @Status			: stable
 # @Usage			: import correlation.py and call main(markers_3d,markers_2d,spots_3d,rotation_center,results_file)
@@ -116,7 +115,7 @@ The procedure is organized as follows:
 # 					: (arbitrary 3rd dimension for the 2D array). Marker coordinates are for the correlation and spot
 # 					: coordinates are points on which the correlation is applied to.
 # @Notes			: Edited and adapted by Jan Arnold (Max Planck Institute of Biochemistry)
-# @Python_version	: 2.7.11
+# @Python_version	: 3.8.7
 """
 # ======================================================================================================================
 

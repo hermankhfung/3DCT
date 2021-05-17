@@ -13,14 +13,13 @@ This generates the MATLAB script and runs in the matlab -nodisplay console.
 # @Copyright		: Copyright (C) 2016  Jan Arnold
 # @License			: GPLv3 (see LICENSE file)
 # @Credits			: Florian Beck, Max-Planck-Institute of Biochemistry
-# @Maintainer		: Jan Arnold
-# @Date				: 2016/01
+# @Date				: 2021/04
 # @Version			: 3DCT 2.3.0 module rev. 1
 # @Status			: development
 # @Usage			: Meant to be imported, i.e. import matlab3Drotation.py and used with calling
 # 					: matlab_rotate(img_vol,)
 # @Notes			:
-# @Python_version	: 2.7.11
+# @Python_version	: 3.8.7
 """
 # ======================================================================================================================
 

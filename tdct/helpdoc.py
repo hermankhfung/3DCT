@@ -11,13 +11,12 @@
 # @Copyright		: Copyright (C) 2016  Jan Arnold
 # @License			: GPLv3 (see LICENSE file)
 # @Credits			:
-# @Maintainer		: Jan Arnold
-# @Date				: 2016/03/25
+# @Date				: 2021/04
 # @Version			: 3DCT 2.3.0 module rev. 2
 # @Status			: stable
 # @Usage			: import helpdoc.py and call functions
 # @Notes			:
-# @Python_version	: 2.7.11
+# @Python_version	: 3.8.7
 """
 # ======================================================================================================================
 from PyQt5 import QtWidgets

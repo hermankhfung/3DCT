@@ -9,18 +9,17 @@ to one single stack file, ...).
 # @Title			: TDCT_correlation
 # @Project			: 3DCTv2
 # @Description		: Extracting 2D and 3D points for 2D to 3D correlation
-# @Author			: Jan Arnold
-# @Email			: jan.arnold (at) coraxx.net
-# @Copyright		: Copyright (C) 2016  Jan Arnold
+# @Author			: Jan Arnold, Herman Fung, Julia Mahamid
+# @Email			: jan.arnold (at) coraxx.net, herman.fung (at) embl.de
+# @Copyright		: Copyright (C) 2016  Jan Arnold, Copyright (C) 2021  EMBL/Herman Fung, EMBL/Julia Mahamid
 # @License			: GPLv3 (see LICENSE file)
 # @Credits			:
-# @Maintainer		: Jan Arnold
-# @Date				: 2016/01
+# @Date				: 2021/04
 # @Version			: 3DCT 2.3.0 module rev. 30
 # @Status			: stable
 # @Usage			: part of 3D Correlation Toolbox
 # @Notes			:
-# @Python_version	: 2.7.11
+# @Python_version	: 3.8.7
 """
 # ======================================================================================================================
 
@@ -554,6 +553,8 @@ class MainWidget(QtWidgets.QMainWindow, Ui_WidgetWindow):
         rowsLeft = self.modelLleft.rowCount()
         rowsRight = self.modelRight.rowCount()
         alpha = 100
+        self.modelLleft.blockSignals(True) # prevents recursive behaviour when updating item
+        self.modelRight.blockSignals(True)
         for row in range(min([rowsLeft,rowsRight])):
             color_correlate = (50,220,175,alpha)
             if rowsLeft != 0:
@@ -596,6 +597,8 @@ class MainWidget(QtWidgets.QMainWindow, Ui_WidgetWindow):
                     self.modelRight.item(row, 2).setBackground(QtGui.QColor(*color_overflow))
                 except:
                     if debug is True: print(clrmsg.DEBUG + "Model item is None")
+        self.modelLleft.blockSignals(False)
+        self.modelRight.blockSignals(False)
 
     def getMarkerColor(self):
         color = QtWidgets.QColorDialog.getColor()

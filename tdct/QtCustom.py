@@ -16,13 +16,12 @@ Custom Qt classes. Some widgets in QT Designer are promoted to these classes:
 # @Copyright		: Copyright (C) 2016  Jan Arnold
 # @License			: GPLv3 (see LICENSE file)
 # @Credits			:
-# @Maintainer		: Jan Arnold
-# @Date				: 2016/02/27
+# @Date				: 2021/04
 # @Version			: 3DCT 2.3.0 module rev. 47
 # @Status			: stable
 # @Usage			: part of 3D Correlation Toolbox
 # @Notes			: Some widgets in QT Designer are promoted to these classes
-# @Python_version	: 2.7.11
+# @Python_version	: 3.8.7
 """
 # ======================================================================================================================
 

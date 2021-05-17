@@ -12,7 +12,8 @@ a = Analysis(['TDCT_main.py'],
               ],
              hiddenimports=[
                'skimage.feature',
-               'icons_rc'
+               'icons_rc',
+               'imagecodecs'
               ],
              hookspath=[],
              runtime_hooks=[],
@@ -29,7 +30,7 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           [],
-          name='TDCT_main',
+          name='3D Correlation Toolbox',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,

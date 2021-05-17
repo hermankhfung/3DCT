@@ -37,8 +37,7 @@ kwargs:
 # @Copyright		: Copyright (C) 2016  Jan Arnold
 # @License			: GPLv3 (see LICENSE file)
 # @Credits			:
-# @Maintainer		: Jan Arnold
-# @Date				: 2016/01
+# @Date				: 2021/04
 # @Version			: 3DCT 2.3.0 module rev. 8
 # @Status			: stable
 # @Usage			: Can be used as standalone application, i.e. run python -u stackProcessing.py
@@ -66,7 +65,7 @@ kwargs:
 # 					: 							middle of input stack for comparison between the original data and the
 # 					: 							linear as well as the spline interpolation.
 # @Notes			:
-# @Python_version	: 2.7.11
+# @Python_version	: 3.8.7
 """
 # ======================================================================================================================
 

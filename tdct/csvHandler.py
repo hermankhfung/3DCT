@@ -18,15 +18,14 @@ e.g. export:
 # @Copyright		: Copyright (C) 2016  Jan Arnold
 # @License			: GPLv3 (see LICENSE file)
 # @Credits			:
-# @Maintainer		: Jan Arnold
-# @Date				: 2015/09
+# @Date				: 2021/04
 # @Version			: 3DCT 2.3.0 module rev. 3
 # @Status			: stable
 # @Usage			: import csvHandler
 # 					: e.g. import: >>> model = csvHandler.csv2model('test.csv',delimiter="\t",sniff=False,parent=None)
 # 					: e.g. export: >>> csvHandler.model2csv(model,'test.csv',delimiter="\t")
 # @Notes			:
-# @Python_version	: 2.7.11
+# @Python_version	: 3.8.7
 """
 # ======================================================================================================================
 
