@@ -12,11 +12,11 @@ Enable/Disable 3D Correlation Toolbox debugging
 # @License			: GPLv3
 # @Credits			:
 # @Date				: 2016/04/15
-# @Version			: 3DCT 2.3.0
+# @Version			: 3DCT 3.0.0
 # @Status			: stable
 # @Usage			: import TDCT_debug
 # @Notes			:
-# @Python_version	: 3.8.7
+# @Python_version	: 3.8.9
 """
 # ======================================================================================================================
 

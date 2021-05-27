@@ -20,13 +20,13 @@ and it will print:
 # @Credits			: Arnon Yaari
 # 					: https://github.com/tartley/colorama
 # @Date				: 2021/04
-# @Version			: 3DCT 2.3.0 module rev. 1
+# @Version			: 3DCT 3.0.0 module rev. 1
 # @Status			: stable
 # @Usage			: import clrmsg
 # 					: then call e.g. # print(clrmsg.ERROR + 'Error message')
 # 					: and it will return # [ ERROR ] Error message
 # @Notes			: You can add your own status prefixes.
-# @Python_version	: 3.8.7
+# @Python_version	: 3.8.9
 """
 # ======================================================================================================================
 

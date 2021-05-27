@@ -11,10 +11,10 @@ Modules for the 3D Correlation Toolbox
 # @Credits			:
 # @Maintainer		: Jan Arnold
 # @Date				: 2016/03/21
-# @Version			: 2.1.0
+# @Version			: 3.0.0
 # @Status			: stable
 # @Usage			:
 # @Notes			:
-# @Python_version	: 2.7.11
+# @Python_version	: 3.8.9
 '''
 # ============================================================================

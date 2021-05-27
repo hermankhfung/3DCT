@@ -19,13 +19,13 @@ e.g. export:
 # @License			: GPLv3 (see LICENSE file)
 # @Credits			:
 # @Date				: 2021/04
-# @Version			: 3DCT 2.3.0 module rev. 3
+# @Version			: 3DCT 3.0.0 module rev. 3
 # @Status			: stable
 # @Usage			: import csvHandler
 # 					: e.g. import: >>> model = csvHandler.csv2model('test.csv',delimiter="\t",sniff=False,parent=None)
 # 					: e.g. export: >>> csvHandler.model2csv(model,'test.csv',delimiter="\t")
 # @Notes			:
-# @Python_version	: 3.8.7
+# @Python_version	: 3.8.9
 """
 # ======================================================================================================================
 

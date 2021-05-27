@@ -38,7 +38,7 @@ kwargs:
 # @License			: GPLv3 (see LICENSE file)
 # @Credits			:
 # @Date				: 2021/04
-# @Version			: 3DCT 2.3.0 module rev. 8
+# @Version			: 3DCT 3.0.0
 # @Status			: stable
 # @Usage			: Can be used as standalone application, i.e. run python -u stackProcessing.py
 # 					: or import stackProcessing.py and use main function like:
@@ -65,7 +65,7 @@ kwargs:
 # 					: 							middle of input stack for comparison between the original data and the
 # 					: 							linear as well as the spline interpolation.
 # @Notes			:
-# @Python_version	: 3.8.7
+# @Python_version	: 3.8.9
 """
 # ======================================================================================================================
 

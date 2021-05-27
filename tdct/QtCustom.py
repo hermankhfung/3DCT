@@ -17,11 +17,11 @@ Custom Qt classes. Some widgets in QT Designer are promoted to these classes:
 # @License			: GPLv3 (see LICENSE file)
 # @Credits			:
 # @Date				: 2021/04
-# @Version			: 3DCT 2.3.0 module rev. 47
+# @Version			: 3DCT 3.0.0
 # @Status			: stable
 # @Usage			: part of 3D Correlation Toolbox
 # @Notes			: Some widgets in QT Designer are promoted to these classes
-# @Python_version	: 3.8.7
+# @Python_version	: 3.8.9
 """
 # ======================================================================================================================
 
@@ -603,7 +603,9 @@ class MatplotlibWidgetCustom(QtWidgets.QWidget):
         self.canvas.draw()
 
     def xyPlot(self,*args,**kwargs):
-        self.subplotXY = self.figure.add_subplot(111)
+        n = len(self.figure.axes)
+        if n < 1:
+            self.subplotXY = self.figure.add_subplot(n+1,1,1)
         try:
             clear = kwargs.pop('clear')
         except:
@@ -647,16 +649,6 @@ class QLineEditFilePath(QtWidgets.QLineEdit):
     def __init__(self, parent):
         super().__init__(parent)
         self.setDragEnabled(True)
-        if sys.platform == 'darwin':
-            global objc
-            global CF
-            try:
-                import objc
-                import CoreFoundation as CF
-                if debug is True: print(clrmsg.DEBUG + """"objc" and "CoreFoundation" import successful | Drag'n'Drop support for Mac OS X >= 10.10""")
-            except Exception as e:
-                if debug is True: print(clrmsg.ERROR + str(e))
-                objc = None
 
     def dragEnterEvent(self,event):
         urls = event.mimeData().urls()
@@ -674,20 +666,6 @@ class QLineEditFilePath(QtWidgets.QLineEdit):
         if (urls and urls[0].scheme() == 'file'):
             # for some reason, this doubles up the intro slash
             filepath = str(urls[0].path())[1:]
-            if filepath.startswith('.file/id=') and objc:
-                if debug is True: print(clrmsg.DEBUG + 'File id bug in PyQt4, converting:', filepath)
-                filepath = str(self.getUrlFromLocalFileID(urls[0]))
-                if debug is True: print(clrmsg.DEBUG + '							to ->', filepath)
-            elif filepath.startswith('.file/id=') and not objc:
-                if debug is True:
-                    print(clrmsg.DEBUG + (
-                        "File id bug in PyQt4 under mac. Please make sure that PyObjC is installed (pip install PyObjC).\n"
-                        "		  With PyObjC installed, this programm can work around this bug.\n"
-                        "\n"
-                        "		  Reference:\n"
-                        "		  http://stackoverflow.com/questions/34689562/pyqt-mimedata-filename"))
-            ## bugfix for suse, missing "/" in the beginning of the path
-            # if sys.platform in ['linux2', 'darwin']: #  was fixed in pyobj version for mac
             if sys.platform in ['linux2', 'darwin']:
                 if not filepath.startswith('/'):
                     self.setText('/' + filepath)
@@ -695,24 +673,3 @@ class QLineEditFilePath(QtWidgets.QLineEdit):
                     self.setText(filepath)
             else:
                 self.setText(filepath)
-
-    ## http://stackoverflow.com/questions/34689562/pyqt-mimedata-filename
-    def getUrlFromLocalFileID(self, localFileID):
-        localFileQString = QtCore.QString(localFileID.toLocalFile())
-        relCFStringRef = CF.CFStringCreateWithCString(
-            CF.kCFAllocatorDefault,
-            localFileQString.toUtf8(),
-            CF.kCFStringEncodingUTF8
-        )
-        relCFURL = CF.CFURLCreateWithFileSystemPath(
-            CF.kCFAllocatorDefault,
-            relCFStringRef,
-            CF.kCFURLPOSIXPathStyle,
-            False  # is directory
-        )
-        absCFURL = CF.CFURLCreateFilePathURL(
-            CF.kCFAllocatorDefault,
-            relCFURL,
-            objc.NULL
-        )
-        return QtCore.QUrl(str(absCFURL[0])).toLocalFile()

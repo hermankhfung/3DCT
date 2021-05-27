@@ -16,13 +16,13 @@ to get an optimized bead position (optimization of x, y and z)
 # @Credits			: endolith https://gist.github.com/endolith/255291 for parabolic fitting function
 # 					  2D Gaussian fit from http://scipy.github.io/old-wiki/pages/Cookbook/FittingData
 # @Date				: 2021/04
-# @Version			: 3DCT 2.3.0 module rev. 2
+# @Version			: 3DCT 3.0.0 module rev. 2
 # @Status			: stable
 # @Usage			: import beadPos.py and call z = beadPos.getz(x,y,img,n=None,optimize=False) to get z position
 # 					  at the given x and y pixel coordinate or call x,y,z = beadPos.getz(x,y,img,n=None,optimize=True)
 # 					  to get an optimized bead position (optimization of x, y and z)
 # @Notes			: stable, but problems with low SNR <- needs revisiting
-# @Python_version	: 3.8.7
+# @Python_version	: 3.8.9
 """
 # ======================================================================================================================
 

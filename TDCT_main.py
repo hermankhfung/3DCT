@@ -29,7 +29,6 @@ image stacks, the generation of maximum intensity projections (MIP) and normaliz
 images and image stacks (gray scale and multichannel images up to 3 colors or RGBA).
 
 The Toolbox comes with a PyQt5 GUI. Further dependencies as of now are:
-
     - PyQt5
     - numpy
     - scipy
@@ -39,6 +38,7 @@ The Toolbox comes with a PyQt5 GUI. Further dependencies as of now are:
     - qimage2ndarray
     - tifffile (Christoph Gohlke)
     - colorama (optional for colored stdout when debugging)
+    - tools3dct
 
 A test dataset can be downloaded here: http://3dct.semper.space/download/3D_correlation_test_dataset.zip
 
@@ -52,11 +52,11 @@ A test dataset can be downloaded here: http://3dct.semper.space/download/3D_corr
 # @Credits			: Vladan Lucic for the 3D to 2D correlation code
 # 					: and the stackoverflow community for all the bits and pieces
 # @Date				: 2021/04
-# @Version			: 3DCT 2.3.0
+# @Version			: 3DCT 3.0.0
 # @Status			: stable
 # @Usage			: python -u TDCT_main.py
 # @Notes			:
-# @Python_version	: 3.8.7
+# @Python_version	: 3.8.9
 """
 # ======================================================================================================================
 
@@ -89,7 +89,7 @@ if sys.platform == 'win32':
     if debug is True: print(clrmsg.INFO + 'PATH before:', os.environ.get('PATH',''))
     os.environ['PATH'] = execdir + '\;' + os.environ.get('PATH','')
     if debug is True: print(clrmsg.INFO + 'PATH after: ', os.environ.get('PATH',''))
-__version__ = 'v2.3.0'
+__version__ = 'v3.0.0'
 
 if debug is True: print(clrmsg.DEBUG + "Execdir =", execdir)
 ########## GUI layout file #######################################################

@@ -8,27 +8,26 @@ Further information can be found on [http://www.biochem.mpg.de/en/rd/baumeister]
 
 The Toolbox is written in Python 3.8 and comes with a PyQt5 GUI. Further dependencies as of now are:
 
-* PyQt5 [^1]
-+ numpy [^2]
-+ scipy [^2]
-+ matplotlib [^2]
-+ opencv-python [^1]
-+ tifffile 2020.10.1 [^2]  (Christoph Gohlke)
-+ colorama [^2]  (optional for colored stdout when debugging)
-+ qimage2ndarray [^2]
-+ tools3dct [^3]
++ PyQt5 [1]
++ numpy [1]
++ scipy [1]
++ matplotlib [1]
++ opencv-python [1]
++ tifffile 2021.4.8 [1]  (Christoph Gohlke)
++ colorama [1]  (optional for colored stdout when debugging)
++ qimage2ndarray [1]
++ tools3dct [2]
 
-[^1]: usually available via your favorite package manager
-[^2]: available via pip
-[^3]: available via https://github.com/hermankhfung/xxx.git
+[1]: available via pip or your favourite package manager  
+[2]: available via [https://github.com/hermankhfung/tools3dct](https://github.com/hermankhfung/tools3dct)
 
-A test dataset can be downloaded here: [http://3dct.semper.space/download/3D_correlation_test_dataset.zip](http://3dct.semper.space/download/3D_correlation_test_dataset.zip)
+A test dataset can be downloaded here: [https://3dct.semper.space/download/3D_correlation_test_dataset.zip](https://3dct.semper.space/download/3D_correlation_test_dataset.zip)
 
 An introduction video can be viewed here: [https://www.youtube.com/watch?v=nZnUZ877-TU](https://www.youtube.com/watch?v=nZnUZ877-TU)
 
 ### License ###
 
-Copyright (C) 2016  Jan Arnold
+Copyright (C) 2016  Jan Arnold  
 Copyright (C) 2021  EMBL/Herman Fung, EMBL/Julia Mahamid
 
 	This program is free software: you can redistribute it and/or modify
@@ -46,15 +45,17 @@ Copyright (C) 2021  EMBL/Herman Fung, EMBL/Julia Mahamid
 
 ### Versions ###
 
-Version 2.0 was the first public release, by Jan Arnold, the orignal author, in Python 2.7.
-Version 2.4 contains an updated attribution statement to Pyto by Vladan Lucic, 2020.
-Version 3.0 contains modifications by Herman Fung, 2021, including the porting of Version 2.4 to Python 3.8 and the addition of new functions linking to [tools3dct] for fiducial position determination and post-correlation 3D transformations.
+Version 2.0 was the first public release, by Jan Arnold, the orignal author, in Python 2.7.  
+Version 2.4 contains bugfixes and documentation updates by Vladan Lucic, 2020.  
+Version 3.0 contains modifications by Herman Fung, 2021, including the porting of Version 2.4 to Python 3.8 and the addition of functions from [tools3dct](https://github.com/hermankhfung/tools3dct) for fiducial position determination and post-correlation 3D transformations.
 
-The most recent stable release version is 2.4.0.
+The most recent stable release version is 3.0.0.
 
 ### Binaries ###
 
-There are [Pyinstaller](http://www.pyinstaller.org) binaries available for Mac OS X, Windows, and Linux (built under Ubuntu 15.04) at [http://3dct.semper.space/](http://3dct.semper.space/#download)
+Binaries for macOS, Windows 7 and Windows 10, built using [PyInstaller](https://www.pyinstaller.org), are available at [https://github.com/hermankhfung/3DCT/releases](https://github.com/hermankhfung/3DCT/releases).
+
+Past releases are available at [https://3dct.semper.space/](https://3dct.semper.space/#download)
 
 ### Citing ###
 

@@ -15,11 +15,11 @@ to one single stack file, ...).
 # @License			: GPLv3 (see LICENSE file)
 # @Credits			:
 # @Date				: 2021/04
-# @Version			: 3DCT 2.3.0 module rev. 30
+# @Version			: 3DCT 3.0.0
 # @Status			: stable
 # @Usage			: part of 3D Correlation Toolbox
 # @Notes			:
-# @Python_version	: 3.8.7
+# @Python_version	: 3.8.9
 """
 # ======================================================================================================================
 
@@ -40,7 +40,7 @@ from tdct import clrmsg, TDCT_debug, QtCustom, csvHandler, correlation
 from tools3dct.find_beads import find_beads_GUI
 from tools3dct.predict_FIB import predict_FIB_GUI
 
-__version__ = 'v2.3.0'
+__version__ = 'v3.0.0'
 
 # add working directory temporarily to PYTHONPATH
 if getattr(sys, 'frozen', False):
@@ -1729,7 +1729,7 @@ class MainWidget(QtWidgets.QMainWindow, Ui_WidgetWindow):
                     float(model.data(model.index(rowNumber, columnNumber), QtCore.Qt.DisplayRole))
                     for columnNumber in range(model.columnCount())]
             listarray.append(fields)
-        return np.array(listarray).astype(np.float)
+        return np.array(listarray).astype(float)
 
     def correlate(self):
         if '{0:b}'.format(self.sceneLeft.imagetype)[-1] == '1' and '{0:b}'.format(self.sceneRight.imagetype)[-1] == '0':

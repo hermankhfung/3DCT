@@ -108,14 +108,14 @@ The procedure is organized as follows:
 # @Email			:
 # @Credits			:
 # @Date				: 2021/04
-# @Version			: 3DCT 2.3.0 module rev. 3
+# @Version			: 3DCT 3.0.0 module rev. 3
 # @Status			: stable
 # @Usage			: import correlation.py and call main(markers_3d,markers_2d,spots_3d,rotation_center,results_file)
 # 					: "markers_3d", "markers_2d" and "spots_3d" are numpy arrays. Those contain 3D coordinates
 # 					: (arbitrary 3rd dimension for the 2D array). Marker coordinates are for the correlation and spot
 # 					: coordinates are points on which the correlation is applied to.
 # @Notes			: Edited and adapted by Jan Arnold (Max Planck Institute of Biochemistry)
-# @Python_version	: 3.8.7
+# @Python_version	: 3.8.9
 """
 # ======================================================================================================================
 

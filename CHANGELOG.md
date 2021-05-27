@@ -7,14 +7,16 @@
     - replaced multiplication assignments (*=) with calls to numpy.multiply(..., casting='unsafe') to avoid broadcasting errors with numpy.ndarray
 - updated code to use PyQt5
     - try-catch blocks to handle QFileDialog results
+    - changes in widget size policy, zoom behaviour and matplotlib widget behaviour
 - checkbox for flipping image stacks and sequences, corresponding changes in
     - tdct.stackProcessing.main()
     - tdct.stackProcessing.normalize()
     - tdct.stackProcessing.mip()
 - additional buttons on main and correlation windows for tools3dct module
-    - Create MIP and Create Mask in new Correlated Projection tab
-    - Detect beads and SEM -> FIB in Control tab
+    - 'Create MIP' and 'Create Mask' in new Correlated Projection tab in main window
+    - 'Detect Beads' and 'SEM -> FIB' in Control tab in correlation window
 - modified image checks to allow combination of 2D grayscale and RGB images in both left and right scenes, blending behaviour altered: RGB images in layer 1 will be converted to grayscale if any other layers are switched on
+- binaries bundled with imagecodecs to enable loading of LZW-compressed TIFF via tifffile
 
 
 ## 2.4.0 ##

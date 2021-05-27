@@ -12,11 +12,11 @@
 # @License			: GPLv3 (see LICENSE file)
 # @Credits			:
 # @Date				: 2021/04
-# @Version			: 3DCT 2.3.0 module rev. 2
+# @Version			: 3DCT 3.0.0 module rev. 2
 # @Status			: stable
 # @Usage			: import helpdoc.py and call functions
 # @Notes			:
-# @Python_version	: 3.8.7
+# @Python_version	: 3.8.9
 """
 # ======================================================================================================================
 from PyQt5 import QtWidgets
