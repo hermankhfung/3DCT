@@ -2,24 +2,32 @@
 
 This Toolbox is built for 3D correlative microscopy. It helps with 3D to 2D correlation of three dimensional confocal image stacks to two dimensional SEM/FIB dual beam microscope images. Though it is not limited to that.
 
+This project is forked from https://github.com/hermankhfung/3DCT
+
 The 3D Correlation Toolbox was developed at the Max Planck Institute of Biochemistry, Department of Molecular Structural Biology on the basis of the paper [Site-Specific Cryo-focused Ion Beam Sample Preparation Guided by 3D Correlative Microscopy](http://dx.doi.org/10.1016/j.bpj.2015.10.053). 3DCT uses code from 3D rigid transformation from [Pyto](https://github.com/vladanl/Pyto.git).
 
-Further information can be found on [http://www.biochem.mpg.de/en/rd/baumeister](http://www.biochem.mpg.de/en/rd/baumeister) and [http://3dct.semper.space](http://3dct.semper.space)
+This software is adapted for use at Rosalind franklin Institute, for our specific needs.
 
-The Toolbox is written in Python 3.8 and comes with a PyQt5 GUI. Further dependencies as of now are:
+The Toolbox is written in Python 3.8 and uses PyQt5 GUI.
 
-+ PyQt5 [1]
+For development, conda/anaconda package manager is recommended. An environment file rfi-3dct-condaenvironment.yml is provided.
+A summary of library dependencies are:
+
++ pyqt [1]
 + numpy [1]
 + scipy [1]
 + matplotlib [1]
-+ opencv-python [1]
-+ tifffile 2021.4.8 [1]  (Christoph Gohlke)
-+ colorama [1]  (optional for colored stdout when debugging)
-+ qimage2ndarray [1]
-+ tools3dct [2]
++ colorama [1]
++ tifffile [1]
++ opencv [1]
++ scikit-image [1]
++ psutil [1]
++ qimage2ndarray [2] (-c conda-forge)[1]
++ tools3dct [3]
 
-[1]: available via pip or your favourite package manager  
-[2]: available via [https://github.com/hermankhfung/tools3dct](https://github.com/hermankhfung/tools3dct)
+[1]: Available via pip or conda or another your favourite package manager
+[2] Only available in conda-forge channel . Use `>conda install qimage2ndarray -c conda-forge` .
+[3]: Available via [https://github.com/rosalindfranklininstitute/tools3dct/blob/main/setup.py](https://github.com/rosalindfranklininstitute/tools3dct/blob/main/setup.py). Clone it and run >python setup.py install
 
 A test dataset can be downloaded here: [https://3dct.semper.space/download/3D_correlation_test_dataset.zip](https://3dct.semper.space/download/3D_correlation_test_dataset.zip)
 
@@ -29,6 +37,7 @@ An introduction video can be viewed here: [https://www.youtube.com/watch?v=nZnUZ
 
 Copyright (C) 2016  Jan Arnold  
 Copyright (C) 2021  EMBL/Herman Fung, EMBL/Julia Mahamid
+Copyright (C) 2021  Rosalind Franklin Institute
 
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by

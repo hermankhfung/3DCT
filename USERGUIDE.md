@@ -1,3 +1,5 @@
+#TODO: REVISE THIS DOCUMENT#
+
 # User's Guide #
 ![3D Correlation Toolbox](http://3dct.semper.space/img/userguide/header.png "3D Correlation Toolbox")
 
@@ -103,7 +105,9 @@ This version is build under Ubuntu 15.04.
 
 The Toolbox is written in Python 2.7 and comes with a PyQt4 GUI. Make sure these packages/modules are installed:
 
-* python-qt ([PyQt4](https://www.riverbankcomputing.com/software/pyqt/intro))[^1]
+TODO: Fix this
+
+* python-qt ([PyQt](https://www.riverbankcomputing.com/software/pyqt/intro))[^1]
 + python-opencv ([OpenCV](http://opencv.org))[^1]
 + [numpy](http://www.numpy.org)[^2]
 + [scipy](https://www.scipy.org)[^2]

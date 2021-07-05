@@ -1,0 +1,29 @@
+Developer notes
+
+Use the Anaconda environment RFI-3DCT in file rfi-3dct-condaenvironment.yml
+
+In a Anaconda command prompt type
+conda env create -f rfi-3dct-condaenvironment.yml
+
+Before trying the TDCT-main.py, the other package tools3dct must be installed first.
+This is not a conda package, it is a git python package.
+
+https://github.com/rosalindfranklininstitute/tools3dct
+and install it (in your appropriate conda environment) using
+
+>python setup.py install
+
+Problems:
+
+For some strange reason it installs:
+PyQt5, even though is already installed in the conda environment
+conda list, shows pyqt5
+tools3dct setup.py installs pyqt5 and pyqt5-qt5
+
+imageio 2.9, even though it is already installed in conda environment.
+
+Moved tools3dct to this project
+(please not that there is other stuff in the tools3dct that may be useful, such as the analysis routines)
+
+
+

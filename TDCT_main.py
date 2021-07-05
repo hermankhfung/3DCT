@@ -28,20 +28,6 @@ It also includes preprocessing tools to convert stack sequences from FEI's CorrS
 image stacks, the generation of maximum intensity projections (MIP) and normalization of single
 images and image stacks (gray scale and multichannel images up to 3 colors or RGBA).
 
-The Toolbox comes with a PyQt5 GUI. Further dependencies as of now are:
-    - PyQt5
-    - numpy
-    - scipy
-    - matplotlib
-    - opencv
-    - cv2
-    - qimage2ndarray
-    - tifffile (Christoph Gohlke)
-    - colorama (optional for colored stdout when debugging)
-    - tools3dct
-
-A test dataset can be downloaded here: http://3dct.semper.space/download/3D_correlation_test_dataset.zip
-
 # @Title			: TDCT_main
 # @Project			: 3DCTv2
 # @Description		: 3D Correlation Toolbox - 3DCT
