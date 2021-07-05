@@ -1,0 +1,6 @@
+pyinstaller TDCT_main.py --name "3DCorrelationToolbox-RFI" -i "icons\3DCT_icon.ico" --windowed --hidden-import="skimage.filters.rank.core_cy_3d" --add-data "TDCT_correlation.ui;." --add-data "TDCT_main.ui;." --add-data "icons_rc.py;."
+
+It should create a new file or folder in /dist folder with the executable 3DCorrelationToolbox-RFI
+
+or, Same but creates a single executable file (Can cause problems)
+pyinstaller TDCT_main.py --name "3DCorrelationToolboxHKHF-RFI-single" -i "icons\3DCT_icon.ico" --windowed --onefile --hidden-import="skimage.filters.rank.core_cy_3d" --add-data "TDCT_correlation.ui;." --add-data "TDCT_main.ui;." --add-data "icons_rc.py;."

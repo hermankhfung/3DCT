@@ -25,5 +25,3 @@ imageio 2.9, even though it is already installed in conda environment.
 Moved tools3dct to this project
 (please not that there is other stuff in the tools3dct that may be useful, such as the analysis routines)
 
-
-
