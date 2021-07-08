@@ -203,6 +203,15 @@ class QTableViewCustom(QtWidgets.QTableView):
             self.contextMenu.popup(QtGui.QCursor.pos())
 
     def getz(self,img,optimize=False,gauss=False):
+        #Called when user right clicks on the table with beads coordinates
+        #and selects either "Get z gauss layer ..." (optimize=False)
+        # or "Get x,y,z gauss layer" (optimize=True).
+        #In both these two cases gauss=True
+
+        #LMAP: I could not find any instances that this function is called with gauss=False.
+        #Consider removing
+        #Perhpas in older versions, a poly fitting was used instead.
+
         indices = self.selectedIndexes()
         ## Determine z for selected rows
         if indices:

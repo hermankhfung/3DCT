@@ -100,52 +100,61 @@ def getzGauss(x,y,img,parent=None,optimize=False,threshold=None,threshVal=0.6,cu
     if not isinstance(img, str) and not isinstance(img, np.ndarray):
         if clrmsg and debug is True: print(clrmsg.ERROR)
         raise TypeError('I can only handle an image path as string or an image volume as numpy.ndarray imported from tifffile.py')
-    elif isinstance(img, str):
+    elif isinstance(img, str): #TODO: This is very strange that the image can be passed as a path rather than an already opened image/volume data
         img = tf.imread(img)
-    x = np.round(x).astype(int)
-    y = np.round(y).astype(int)
-    if 0 <= x < img.shape[-1] and 0 <= y < img.shape[-2]:
-        data_z = img[:,y,x]
+    
+    #List of x and y coordinates of beads/POI are converted to integer type so that they can be used as indexes
+    ix = np.round(x).astype(int)
+    iy = np.round(y).astype(int)
+    if 0 <= ix < img.shape[-1] and 0 <= iy < img.shape[-2]: #Checks the approximate x and y coordinates of the bead are inside the volume
+        data_z = img[:,iy,ix] #Gets data vs z (1D plot) at the approximate x,y locations
         data = np.array([np.arange(len(data_z)), data_z])
         poptZ, pcov = gaussfit(data,parent)
     else:
         poptZ = [None, -1.0, None]
 
     if optimize is False:
-        return poptZ[1]
+        return poptZ[1] #Optimization along z at (x,y) completed. Do not try to fit gaussian on x-y plane.
     else:
-        repeats = 5
+        repeats = 5 #Repeats optimization 5 times
         if clrmsg and debug is True: print(clrmsg.DEBUG + '2D Gaussian xy optimization running %.f at z = %.f' % (repeats,round(poptZ[1])))
         for repeat in range(repeats):
-            if (cutout <= x < img.shape[-1]-cutout and
-                    cutout <= y < img.shape[-2]-cutout and
+            if (cutout <= ix < img.shape[-1]-cutout and
+                    cutout <= iy < img.shape[-2]-cutout and
                     0 <= poptZ[1] < img.shape[-3]-0.5):
+                
+                #Gets 2D XY plane data from image, only around the region of interest
+                #at z=zmean (determined from the previous gaussian fit)
                 data = np.copy(img[
                             int(round(poptZ[1])),
-                            int(y-cutout):int(y+cutout),
-                            int(x-cutout):int(x+cutout)])
+                            int(iy-cutout):int(iy+cutout),
+                            int(ix-cutout):int(ix+cutout)])
             else:
                 print("Point(s) too close to edge or out of bounds.")
-                return x, y, poptZ[1]
+                return ix, iy, poptZ[1]
             if threshold is not None:
                 threshold = data < data.max()-(data.max()-data.min())*threshVal
                 data[threshold] = 0
-            poptXY = fitgaussian(data,parent)
+            
+            #TODO: Testing new function
+            #poptXY = fitgaussian(data,parent)
+            poptXY = fit2Dgaussian(data,parent)
+
             if poptXY is None:
-                return x, y, poptZ[1]
+                return ix, iy, poptZ[1]
             (height, xopt, yopt, width_x, width_y) = poptXY
             ## x and y are switched when applying the offset
-            x = x-cutout+yopt
-            y = y-cutout+xopt
-            if 0 <= x < img.shape[-1] and 0 <= y < img.shape[-2]:
-                data_z = img[:,int(y),int(x)]
+            ix = ix-cutout+yopt
+            iy = iy-cutout+xopt
+            if 0 <= ix < img.shape[-1] and 0 <= iy < img.shape[-2]:
+                data_z = img[:,int(iy),int(ix)]
             else:
-                return x, y, poptZ[1]
+                return ix, iy, poptZ[1]
             data = np.array([np.arange(len(data_z)), data_z])
             poptZ, pcov = gaussfit(data,parent,hold=True)
             if parent: parent.refreshUI()
             time.sleep(0.01)
-        return x, y, poptZ[1]
+        return ix, iy, poptZ[1]
 
 
 def optimize_z(x,y,z,image,n=None):
@@ -303,9 +312,12 @@ def gauss(x, *p):
 
 
 def gaussfit(data,parent=None,hold=False):
-    ## Fitting gaussian to data
+    ## Fitting 1D gaussian to data
+    # and plots to parent.widget_matplotlib the result
     data[1] = data[1]-data[1].min()
     p0 = [data[1].max(), data[1].argmax(), 1]
+
+    #uses curve_fit() from scipy
     popt, pcov = curve_fit(gauss, data[0], data[1], p0=p0)
 
     if parent is not None:
@@ -351,6 +363,8 @@ def moments(data):
     """Returns (height, x, y, width_x, width_y)
     the Gaussian parameters of a 2D distribution by calculating its
     moments"""
+    #TODO: The role of this function is not clear
+    #But it appears it makes gaussian fitting easier
     total = data.sum()
     X, Y = np.indices(data.shape)
     x = (X*data).sum()/total
@@ -360,6 +374,13 @@ def moments(data):
     row = data[int(x), :]
     width_y = np.sqrt(abs((np.arange(row.size)-x)**2*row).sum()/row.sum())
     height = data.max()
+
+    #This actually returns the follwing
+    #height = maximum datavalue
+    #x = average of the ix*datavalue
+    #y = average of the iy*datavalue
+    #width_x ?
+    #width_y ?
     return height, x, y, width_x, width_y
 
 
@@ -367,14 +388,40 @@ def fitgaussian(data,parent=None):
     """Returns (height, x, y, width_x, width_y)
     the Gaussian parameters of a 2D distribution found by a fit"""
 
-    def errorfunction(p):
-        return np.ravel(gaussian(*p)(*np.indices(data.shape)) - data)
+    #LMAP: This 2D gaussian fitting is done using the least squares optimizer in scikit.
+    #Strangely enough, it does not use the scipy.optimize.curve_fit
+
+    def errorfunction(gaussianparams):
+        #this error function is very weird. This is not the mathematical error function
+        #It is just gaussian-datavalue
+
+        #For the leastsq fitting to work, this function can return a 1D array with the
+        # (fit-data) values
+        #The leastsq algorithm will then minimize the value of
+        # sum( (funct)**2 )
+        #by adjusting the parameters
+
+        return np.ravel(gaussian(*gaussianparams)(*np.indices(data.shape)) - data)
+        '''
+        This is equivalent to something like
+        ind0 = np.indices(data.shape) #np.indices is similar to meshgrid but Y_mg and X_mg are obtaied with index)
+        X_mg = ind0[0]
+        Y_mg_ = ind0[1]
+        mygaussianf = gaussian(*gaussianparams)
+        mygaussianf_array = mygaussianf(X_mg,Y_mg)
+        mygaussianf_array_flattened = np.ravel(mygaussianf_array)
+        return mygaussianf_array_flattened
+        '''
 
     try:
-        params = moments(data)
+        gaussparams_initvalues = moments(data)
     except ValueError:
         return None
-    p, success = leastsq(errorfunction, params)
+    
+    #https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.leastsq.html
+    #Finds the gaussian parameters p that fit best to the data.
+    p, success = leastsq(errorfunction, gaussparams_initvalues)
+    
     if np.isnan(p).any():
         parent.widget_matplotlib.matshowPlot(
             mat=data,contour=np.ones(data.shape),labelContour="XY optimization failed\n" +
@@ -458,3 +505,84 @@ def fitgaussian(data,parent=None):
 # img = tf.imread('/Users/jan/Desktop/dot2.tif')
 # print img.shape
 # test2Dgauss(img)
+
+
+def fit2Dgaussian(data2D, parent=None, hold=False):
+    #To replace fitgaussian()
+    #Also, it uses scipy.optimize.curve_fit
+    #https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html#scipy.optimize.curve_fit
+
+    #And idea is based on
+    #https://stackoverflow.com/questions/21566379/fitting-a-2d-gaussian-function-using-scipy-optimize-curve-fit-valueerror-and-m
+
+    #For curve_fit() to work
+    #function to optimize must accept the independent variable(s) as first argument
+    def gauss2D (yxpos , height, center_x, center_y, width_x, width_y, offset):
+        '''
+            Assume y = yxpos[0] and x = yxpos[1]
+        '''
+        y=yxpos[0] #Note that y can be a n-dim array
+        x=yxpos[1]
+
+        gaussres = offset + height*np.exp(
+                -(((center_x-x)/width_x)**2+((center_y-y)/width_y)**2)/2)
+
+        return gaussres
+
+    #Need to convert data to a flat array and we need also the corresponding yspos values
+    ind0 = np.indices(data2D.shape, dtype=np.float32)
+    X_mg = ind0[0]
+    Y_mg = ind0[1]
+    X_mg_flat = np.ravel(X_mg)
+    Y_mg_flat = np.ravel(Y_mg)
+
+    #YXPos = np.empty( (2,X_mg_flat.size) )
+    #YXPos[0,:] = Y_mg_flat[:]
+    #YXPos[1,:] = X_mg_flat[:]
+
+    data2D_flat = np.ravel(data2D)
+
+    #get initial guess values
+    #height, center_x, center_y, width_x, width_y, offset
+    height_guess = np.max(data2D)
+    center_x_guess = data2D.shape[1]/2
+    center_y_guess = data2D.shape[0]/2
+    width_x_guess = center_x_guess
+    width_y_guess = center_y_guess
+    offset_guess=0.0
+
+    #curve_fit() only seems to work with flattened data
+    params_opt, params_cov = curve_fit(
+        gauss2D,
+        [Y_mg_flat, X_mg_flat],
+        data2D_flat,
+        p0=( height_guess, center_x_guess, center_y_guess, width_x_guess, width_y_guess, offset_guess)
+    )
+
+    p=params_opt[:-1]
+
+    #Copied from fitgaussian(), changing data to data2D
+    #Returns all parameters except last one called offset
+    #optimized parameters should be in format (height, center_x, center_y, width_x, width_y)
+    
+    if np.isnan(p).any():
+        parent.widget_matplotlib.matshowPlot(
+            mat=data2D,contour=np.ones(data2D.shape),labelContour="XY optimization failed\n" +
+            "Try reducing the\nmarker size (equates to\nFOV for gaussian fit)")
+        return None
+    if parent is not None:
+        ## Draw graphs in GUI
+        fit = gaussian(*p)
+        contour = fit(*np.indices(data2D.shape))
+        (height, x, y, width_x, width_y) = p
+        labelContour = (
+                        "      x : %.1f\n"
+                        "      y : %.1f\n"
+                        "width_x : %.1f\n"
+                        "width_y : %.1f") % (x, y, width_x, width_y)
+        parent.widget_matplotlib.matshowPlot(mat=data2D,contour=contour,labelContour=labelContour)
+    return p
+
+
+
+
