@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1280</width>
+    <width>1000</width>
     <height>755</height>
    </rect>
   </property>
@@ -216,7 +216,7 @@
              <enum>QTabWidget::Rounded</enum>
             </property>
             <property name="currentIndex">
-             <number>0</number>
+             <number>2</number>
             </property>
             <widget class="QWidget" name="ctrl">
              <property name="minimumSize">
@@ -1449,8 +1449,8 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>274</width>
-                   <height>797</height>
+                   <width>257</width>
+                   <height>661</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_17">
@@ -1539,26 +1539,37 @@
                       </widget>
                      </item>
                      <item>
-                      <widget class="QDoubleSpinBox" name="doubleSpinBox_scatterPlotFrameSize">
-                       <property name="toolTip">
-                        <string/>
-                       </property>
-                       <property name="prefix">
-                        <string/>
-                       </property>
-                       <property name="suffix">
-                        <string> px</string>
-                       </property>
-                       <property name="maximum">
-                        <double>50.000000000000000</double>
-                       </property>
-                       <property name="singleStep">
-                        <double>0.050000000000000</double>
-                       </property>
-                       <property name="value">
-                        <double>1.800000000000000</double>
-                       </property>
-                      </widget>
+                      <layout class="QHBoxLayout" name="horizontalLayout_42">
+                       <item>
+                        <widget class="QLabel" name="label_29">
+                         <property name="text">
+                          <string>Frame size</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QDoubleSpinBox" name="doubleSpinBox_scatterPlotFrameSize">
+                         <property name="toolTip">
+                          <string/>
+                         </property>
+                         <property name="prefix">
+                          <string/>
+                         </property>
+                         <property name="suffix">
+                          <string> px</string>
+                         </property>
+                         <property name="maximum">
+                          <double>50.000000000000000</double>
+                         </property>
+                         <property name="singleStep">
+                          <double>0.050000000000000</double>
+                         </property>
+                         <property name="value">
+                          <double>1.800000000000000</double>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
                      </item>
                     </layout>
                    </widget>
@@ -2065,8 +2076,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1280</width>
-     <height>22</height>
+     <width>1000</width>
+     <height>21</height>
     </rect>
    </property>
   </widget>

@@ -232,6 +232,7 @@ class QTableViewCustom(QtWidgets.QTableView):
                 y = float(self._model.data(self._model.index(row, 1)))
                 if gauss is True:
                     if optimize is False:
+                        # "Get z gauss..."
                         zopt = beadPos.getzGauss(x,y,img,parent=self.mainParent)
                         if debug is True: print(clrmsg.DEBUG + str(img.shape), zopt)
                         if 0 <= zopt <= img.shape[-3]:
@@ -242,6 +243,7 @@ class QTableViewCustom(QtWidgets.QTableView):
                             self._model.itemFromIndex(self._model.index(row, 2)).setForeground(QtCore.Qt.red)
                         self._model.itemFromIndex(self._model.index(row, 2)).setText(str(zopt))
                     else:
+                        # "Get x,y,z gauss..."
                         xopt,yopt,zopt = beadPos.getzGauss(
                             x,y,img,parent=self.mainParent,optimize=True,threshold=True,
                             threshVal=self.mainParent.doubleSpinBox_treshVal.value(),cutout=self._scene.markerSize)
@@ -259,7 +261,8 @@ class QTableViewCustom(QtWidgets.QTableView):
                         self._model.itemFromIndex(self._model.index(row, 0)).setText(str(xopt))
                         self._model.itemFromIndex(self._model.index(row, 1)).setText(str(yopt))
                         self._model.itemFromIndex(self._model.index(row, 2)).setText(str(zopt))
-                elif optimize is False:
+
+                elif optimize is False: #Probably never runs because gauss is never False
                     zopt = beadPos.getzPoly(x,y,img,n=None)
                     if debug is True: print(clrmsg.DEBUG + str(img.shape), zopt)
                     if 0 <= zopt <= img.shape[-3]:
@@ -269,7 +272,7 @@ class QTableViewCustom(QtWidgets.QTableView):
                         self._scene.zValuesDict[activeitems[row]][1] = (255,0,0)
                         self._model.itemFromIndex(self._model.index(row, 2)).setForeground(QtCore.Qt.red)
                     self._model.itemFromIndex(self._model.index(row, 2)).setText(str(zopt))
-                elif optimize is True:
+                elif optimize is True: #Probably never runs because gauss is never False
                     xopt,yopt,zopt = beadPos.getzPoly(x,y,img,n=None,optimize=True)
                     if debug is True: print(clrmsg.DEBUG + str(img.shape), xopt,yopt,zopt)
                     if 0 <= xopt <= img.shape[-1] and 0 <= yopt <= img.shape[-2] and 0 <= zopt <= img.shape[-3]:
@@ -631,6 +634,8 @@ class MatplotlibWidgetCustom(QtWidgets.QWidget):
     def matshowPlot(self,mat=None,contour=None,labelContour=''):
         # import tifffile as tf
         n = len(self.figure.axes)
+
+        #Adds a plot to an existing one
         if n < 2:
             for i in range(n):
                 self.figure.axes[i].change_geometry(n + 1, 1, i + 1)

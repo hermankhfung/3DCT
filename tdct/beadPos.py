@@ -97,6 +97,9 @@ def getzGauss(x,y,img,parent=None,optimize=False,threshold=None,threshVal=0.6,cu
     threshold == True filters the image where it cuts off at max - min * threshVal (threshVal between 0.1 and 1)
     cutout specifies the FOV for the 2D Gaussian fit"""
 
+    #Optimizes a gaussian in z direction first
+    #Then it optimizes a 2D gaussian in the xy plane
+
     if not isinstance(img, str) and not isinstance(img, np.ndarray):
         if clrmsg and debug is True: print(clrmsg.ERROR)
         raise TypeError('I can only handle an image path as string or an image volume as numpy.ndarray imported from tifffile.py')
@@ -109,10 +112,15 @@ def getzGauss(x,y,img,parent=None,optimize=False,threshold=None,threshVal=0.6,cu
     if 0 <= ix < img.shape[-1] and 0 <= iy < img.shape[-2]: #Checks the approximate x and y coordinates of the bead are inside the volume
         data_z = img[:,iy,ix] #Gets data vs z (1D plot) at the approximate x,y locations
         data = np.array([np.arange(len(data_z)), data_z])
+
+        #Fits a gaussian in the z axis direction
         poptZ, pcov = gaussfit(data,parent)
     else:
+        #approximate (x,y) coordinates of the bead are outside image boundaries
+        #set the gaussian parameters to following
         poptZ = [None, -1.0, None]
 
+    #popt - gaussian optimized parameters in format A, mu, sigma
     if optimize is False:
         return poptZ[1] #Optimization along z at (x,y) completed. Do not try to fit gaussian on x-y plane.
     else:
@@ -141,7 +149,10 @@ def getzGauss(x,y,img,parent=None,optimize=False,threshold=None,threshVal=0.6,cu
             poptXY = fit2Dgaussian(data,parent)
 
             if poptXY is None:
+                #Failed to fit in the 2D plane, exit
                 return ix, iy, poptZ[1]
+
+            #gets the optimized gaussian2D parameters
             (height, xopt, yopt, width_x, width_y) = poptXY
             ## x and y are switched when applying the offset
             ix = ix-cutout+yopt
@@ -330,7 +341,14 @@ def gaussfit(data,parent=None,hold=False):
         if hold is False:
             parent.widget_matplotlib.setupScatterCanvas(width=4,height=4,dpi=52,toolbar=False)
         parent.widget_matplotlib.xyPlot(data[0], data[1], label='z data',clear=True)
-        parent.widget_matplotlib.xyPlot(x, y, label='gaussian fit',clear=False)
+        #parent.widget_matplotlib.xyPlot(x, y, label='gaussian fit',clear=False)
+
+        #Try adding wiidth to plot label
+        parent.widget_matplotlib.xyPlot(x, y,
+            label=('gauss fit w=%.1f' % (popt[2])),
+            clear=False )
+
+            
 
     ## DEBUG
     if clrmsg and debug is True:
@@ -572,15 +590,16 @@ def fit2Dgaussian(data2D, parent=None, hold=False):
         return None
     if parent is not None:
         ## Draw graphs in GUI
-        fit = gaussian(*p)
-        contour = fit(*np.indices(data2D.shape))
+        gaussfit_function = gaussian(*p) #Gets a gaussian function with the parameters given
+        gaussfit_data= gaussfit_function(*np.indices(data2D.shape))
         (height, x, y, width_x, width_y) = p
         labelContour = (
                         "      x : %.1f\n"
                         "      y : %.1f\n"
                         "width_x : %.1f\n"
                         "width_y : %.1f") % (x, y, width_x, width_y)
-        parent.widget_matplotlib.matshowPlot(mat=data2D,contour=contour,labelContour=labelContour)
+        parent.widget_matplotlib.matshowPlot(mat=data2D, contour=gaussfit_data, labelContour=labelContour)
+        #matshowplot() in QTCustom.py , MatplotlibWidgetCustom
     return p
 
 
