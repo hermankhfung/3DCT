@@ -1027,6 +1027,7 @@ class Rigid3D(Affine):
         elif ret == 'both':
             return np.array([[phi_1, theta_1, psi_1], [phi_2, theta_2, psi_2]])
 
+    #This is a static method. Not sure why is within a class
     @classmethod
     def euler_to_ck(cls, angles, mode='x'):
         """
@@ -1036,24 +1037,24 @@ class Rigid3D(Affine):
         """
 
         # unpack angles
-        fi, theta, psi = angles
+        phi, theta, psi = angles
 
         if mode == 'x':
 
             res = np.array(
-                [np.cos((fi + psi)/2) * np.cos(theta/2),
-                 np.cos((psi - fi)/2) * np.sin(theta/2),
-                 np.sin((psi - fi)/2) * np.sin(theta/2),
-                 np.sin((fi + psi)/2) * np.cos(theta/2)]
+                [np.cos((phi + psi)/2) * np.cos(theta/2),
+                 np.cos((psi - phi)/2) * np.sin(theta/2),
+                 np.sin((psi - phi)/2) * np.sin(theta/2),
+                 np.sin((phi + psi)/2) * np.cos(theta/2)]
                 )
 
         elif mode == 'test':
-
+            #These have small differences to 'x' mode
             res = np.array(
-                [np.cos((fi + psi)/2) * np.cos(theta/2),
-                 np.cos((fi - psi)/2) * np.sin(theta/2),
-                 np.sin((fi - psi)/2) * np.sin(theta/2),
-                 np.sin((fi + psi)/2) * np.cos(theta/2)]
+                [np.cos((phi + psi)/2) * np.cos(theta/2),
+                 np.cos((phi - psi)/2) * np.sin(theta/2),
+                 np.sin((phi - psi)/2) * np.sin(theta/2),
+                 np.sin((phi + psi)/2) * np.cos(theta/2)]
                 )
 
         else:

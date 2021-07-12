@@ -31,9 +31,9 @@ images and image stacks (gray scale and multichannel images up to 3 colors or RG
 # @Title			: TDCT_main
 # @Project			: 3DCTv2
 # @Description		: 3D Correlation Toolbox - 3DCT
-# @Author			: Jan Arnold, Herman Fung, Julia Mahamid
-# @Email			: jan.arnold (at) coraxx.net, herman.fung (at) embl.de
-# @Copyright		: Copyright (C) 2016  Jan Arnold, Copyright (C) 2021  EMBL/Herman Fung, EMBL/Julia Mahamid
+# @Author			: Luis Perdigao (RFI), and  Jan Arnold, Herman Fung, Julia Mahamid (EMBL)
+# @Email			: luis.perdigao@rfi.ac.uk
+# @Copyright		: 
 # @License			: GPLv3 (see LICENSE file)
 # @Credits			: Vladan Lucic for the 3D to 2D correlation code
 # 					: and the stackoverflow community for all the bits and pieces

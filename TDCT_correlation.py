@@ -1874,16 +1874,37 @@ class MainWidget(QtWidgets.QMainWindow, Ui_WidgetWindow):
         if nrRowsModel2D >= 3:
             if nrRowsModel2D <= nrRowsModel3D:
                 timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
-                self.correlation_results = correlation.main(
-                                                        markers_3d=self.model2np(model3D,[0,nrRowsModel2D]),
-                                                        markers_2d=self.model2np(model2D,[0,nrRowsModel2D]),
-                                                        spots_3d=self.model2np(model3D,[nrRowsModel2D,nrRowsModel3D]),
-                                                        rotation_center=self.rotation_center,
-                                                        results_file=''.join([
-                                                            self.workingdir,'/',timestamp, '_correlation.txt'
-                                                            ] if self.checkBox_writeReport.isChecked() else ''),
-                                                        imageProps=imageProps
-                                                        )
+
+                if self.correlInitialParamRandomChkBx.isChecked():
+                    #Use random initial rotations and parameters to optimize correlation
+                    self.correlation_results = correlation.main(
+                                                            markers_3d=self.model2np(model3D,[0,nrRowsModel2D]),
+                                                            markers_2d=self.model2np(model2D,[0,nrRowsModel2D]),
+                                                            spots_3d=self.model2np(model3D,[nrRowsModel2D,nrRowsModel3D]),
+                                                            rotation_center=self.rotation_center,
+                                                            results_file=''.join([
+                                                                self.workingdir,'/',timestamp, '_correlation.txt'
+                                                                ] if self.checkBox_writeReport.isChecked() else ''),
+                                                            imageProps=imageProps
+                                                            )
+                else:
+                    #Use specified initial parameters
+                    self.correlation_results = correlation.main_withInitParams(
+                                                            markers_3d=self.model2np(model3D,[0,nrRowsModel2D]),
+                                                            markers_2d=self.model2np(model2D,[0,nrRowsModel2D]),
+                                                            spots_3d=self.model2np(model3D,[nrRowsModel2D,nrRowsModel3D]),
+                                                            rotation_center=self.rotation_center,
+                                                            psi0= self.corrInitParamPsiDoubleSpinBox.value(),
+                                                            phi0= self.corrInitParamPhiDoubleSpinBox.value(),
+                                                            theta0= self.corrInitParamThetaDoubleSpinBox.value(),
+                                                            scale0= self.corrInitParamScaleDoubleSpinBox.value(),
+                                                            results_file=''.join([
+                                                                self.workingdir,'/',timestamp, '_correlation.txt'
+                                                                ] if self.checkBox_writeReport.isChecked() else ''),
+                                                            imageProps=imageProps
+                                                            )
+
+
             else:
                 QtWidgets.QMessageBox.critical(self, "Data Structure", "The two datasets do not contain the same amount of markers!")
                 return
